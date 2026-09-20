@@ -79,6 +79,11 @@ def update_transaction(conn: sqlite3.Connection, transaction_id: int, fields: di
             raise ValidationFailed("category_id cannot be null")
         _require_category(conn, fields["category_id"])
 
+    # Reject explicit nulls for non-nullable fields
+    for field in ["merchant", "date", "amount", "direction"]:
+        if field in fields and fields[field] is None:
+            raise ValidationFailed(f"{field} cannot be null")
+
     sets: dict = {}
     if "category_id" in fields:
         sets["category_id"] = fields["category_id"]

@@ -122,3 +122,46 @@ def test_manual_category_survives_rule_reapply(client, conn):
     conn.commit()
     reapply_rules(conn)
     assert client.get("/api/transactions").json()["items"][0]["category"] == "Shopping"
+
+
+def test_explicit_null_rejected_for_non_nullable_fields(client):
+    acct = manual_account(client)
+    tid = create(client, acct, description="Lunch", cardholder="Ann").json()["id"]
+    original = client.get(f"/api/transactions/{tid}").json()
+
+    # Test date null -> 400
+    r = client.patch(f"/api/transactions/{tid}", json={"date": None})
+    assert r.status_code == 400, r.text
+    assert client.get(f"/api/transactions/{tid}").json() == original
+
+    # Test amount null -> 400
+    r = client.patch(f"/api/transactions/{tid}", json={"amount": None})
+    assert r.status_code == 400, r.text
+    assert client.get(f"/api/transactions/{tid}").json() == original
+
+    # Test merchant null -> 400
+    r = client.patch(f"/api/transactions/{tid}", json={"merchant": None})
+    assert r.status_code == 400, r.text
+    assert client.get(f"/api/transactions/{tid}").json() == original
+
+    # Test direction null -> 400
+    r = client.patch(f"/api/transactions/{tid}", json={"direction": None})
+    assert r.status_code == 400, r.text
+    assert client.get(f"/api/transactions/{tid}").json() == original
+
+
+def test_explicit_null_clears_nullable_fields(client):
+    acct = manual_account(client)
+    tid = create(client, acct, description="Lunch", cardholder="Ann").json()["id"]
+
+    # Clear description with null
+    r = client.patch(f"/api/transactions/{tid}", json={"description": None})
+    assert r.status_code == 200, r.text
+    t = r.json()
+    assert t["description"] == "Corner Cafe"  # Falls back to merchant
+
+    # Clear cardholder with null
+    r = client.patch(f"/api/transactions/{tid}", json={"cardholder": None})
+    assert r.status_code == 200, r.text
+    t = r.json()
+    assert t["cardholder"] is None
