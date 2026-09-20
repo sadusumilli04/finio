@@ -1,7 +1,8 @@
 import sqlite3
 
-from finio.errors import NotFoundError
+from finio.errors import ForbiddenError, NotFoundError, ValidationFailed
 from finio.services.filters import where_clause
+from finio.services.merchants import clean_merchant, load_aliases, normalize_whitespace
 
 TXN_SELECT = """
 SELECT t.id, t.account_id, a.name AS account_name, t.transaction_date, t.posted_date, t.amount,
@@ -34,3 +35,82 @@ def list_transactions(
         [*params, limit, offset],
     ).fetchall()
     return {"items": [dict(r) for r in rows], "total": total}
+
+
+DIRECTION_TO_TYPE = {"expense": "purchase", "income": "income", "refund": "refund"}
+TYPE_TO_DIRECTION = {v: k for k, v in DIRECTION_TO_TYPE.items()}
+
+
+def _signed(direction: str, amount: int) -> int:
+    return abs(amount) if direction == "expense" else -abs(amount)
+
+
+def _require_category(conn: sqlite3.Connection, category_id: int) -> None:
+    if conn.execute("SELECT 1 FROM categories WHERE id = ?", (category_id,)).fetchone() is None:
+        raise ValidationFailed(f"Category {category_id} does not exist")
+
+
+def create_manual(conn: sqlite3.Connection, data: dict) -> dict:
+    if conn.execute("SELECT 1 FROM accounts WHERE id = ?", (data["account_id"],)).fetchone() is None:
+        raise NotFoundError(f"Account {data['account_id']} not found")
+    _require_category(conn, data["category_id"])
+    merchant = normalize_whitespace(data["merchant"])
+    date = str(data["date"])
+    with conn:
+        cur = conn.execute(
+            "INSERT INTO transactions(account_id, posted_date, transaction_date, amount, type, "
+            "raw_description, merchant_raw, merchant_clean, cardholder, category_id, category_source, origin) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,'manual','manual')",
+            (data["account_id"], date, date, _signed(data["direction"], data["amount"]),
+             DIRECTION_TO_TYPE[data["direction"]], data.get("description") or merchant, merchant,
+             clean_merchant(merchant, load_aliases(conn)), data.get("cardholder") or None, data["category_id"]),
+        )
+    return get_transaction(conn, cur.lastrowid)
+
+
+def update_transaction(conn: sqlite3.Connection, transaction_id: int, fields: dict) -> dict:
+    row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
+    if row is None:
+        raise NotFoundError(f"Transaction {transaction_id} not found")
+    if row["origin"] == "import" and set(fields) - {"category_id"}:
+        raise ForbiddenError("Imported transactions can only be recategorized")
+    if "category_id" in fields:
+        if fields["category_id"] is None:
+            raise ValidationFailed("category_id cannot be null")
+        _require_category(conn, fields["category_id"])
+
+    sets: dict = {}
+    if "category_id" in fields:
+        sets["category_id"] = fields["category_id"]
+        sets["category_source"] = "manual"
+    if row["origin"] == "manual":
+        if "merchant" in fields:
+            merchant = normalize_whitespace(fields["merchant"])
+            sets["merchant_raw"] = merchant
+            sets["merchant_clean"] = clean_merchant(merchant, load_aliases(conn))
+        if "description" in fields:
+            sets["raw_description"] = fields["description"] or sets.get("merchant_raw") or row["merchant_raw"]
+        if "date" in fields:
+            sets["transaction_date"] = sets["posted_date"] = str(fields["date"])
+        if "cardholder" in fields:
+            sets["cardholder"] = fields["cardholder"] or None
+        if "amount" in fields or "direction" in fields:
+            direction = fields.get("direction") or TYPE_TO_DIRECTION.get(row["type"], "expense")
+            amount = fields.get("amount", abs(row["amount"]))
+            sets["amount"] = _signed(direction, amount)
+            sets["type"] = DIRECTION_TO_TYPE[direction]
+    if sets:
+        assignments = ", ".join(f"{col} = ?" for col in sets)
+        with conn:
+            conn.execute(f"UPDATE transactions SET {assignments} WHERE id = ?", [*sets.values(), transaction_id])
+    return get_transaction(conn, transaction_id)
+
+
+def delete_transaction(conn: sqlite3.Connection, transaction_id: int) -> None:
+    row = conn.execute("SELECT origin FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
+    if row is None:
+        raise NotFoundError(f"Transaction {transaction_id} not found")
+    if row["origin"] == "import":
+        raise ForbiddenError("Imported transactions cannot be deleted")
+    with conn:
+        conn.execute("DELETE FROM transactions WHERE id = ?", (transaction_id,))
