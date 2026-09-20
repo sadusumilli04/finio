@@ -12,13 +12,16 @@ export default function Recurring() {
     <section>
       <h1>Recurring charges</h1>
       <FilterBar filters={filters} onChange={setFilters} />
-      {recurring.error && <p className="error">{recurring.error}</p>}
-      {recurring.data?.length === 0 ? (
+      {recurring.error ? (
+        <p className="error">{recurring.error}</p>
+      ) : recurring.data === null ? (
+        <p className="muted">Loading…</p>
+      ) : recurring.data.length === 0 ? (
         <p className="muted">
           Nothing detected yet. A charge counts as recurring after 3 similar payments at a regular interval.
         </p>
       ) : (
-        <table>
+        <table className={recurring.loading ? 'stale' : undefined}>
           <thead>
             <tr>
               <th>Merchant</th>
@@ -30,7 +33,7 @@ export default function Recurring() {
             </tr>
           </thead>
           <tbody>
-            {recurring.data?.map((r) => (
+            {recurring.data.map((r) => (
               <tr key={r.merchant}>
                 <td>{r.merchant}</td>
                 <td>{r.cadence}</td>

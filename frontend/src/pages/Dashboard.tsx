@@ -12,19 +12,22 @@ export default function Dashboard() {
   const merchants = useFetch(() => api.topMerchants(filters), [filters])
 
   const grandTotal = byCategory.data?.reduce((sum, c) => sum + c.total, 0) ?? 0
-  const empty = byCategory.data?.length === 0
+  const errors = [...new Set([byCategory.error, trends.error, merchants.error].filter((e): e is string => !!e))]
+  const notLoaded = byCategory.data === null || trends.data === null || merchants.data === null
+  const refetching = byCategory.loading || trends.loading || merchants.loading
 
   return (
     <section>
       <h1>Dashboard</h1>
       <FilterBar filters={filters} onChange={setFilters} />
-      {(byCategory.error || trends.error || merchants.error) && (
-        <p className="error">{byCategory.error ?? trends.error ?? merchants.error}</p>
-      )}
-      {empty ? (
+      {errors.length > 0 ? (
+        <p className="error">{errors.join(' · ')}</p>
+      ) : notLoaded ? (
+        <p className="muted">Loading…</p>
+      ) : byCategory.data?.length === 0 ? (
         <p className="muted">No spending in this range. Import a statement or add a transaction to get started.</p>
       ) : (
-        <>
+        <div className={refetching ? 'stale' : undefined}>
           <p>
             Total spending: <strong>{formatCents(grandTotal)}</strong>
           </p>
@@ -75,7 +78,7 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
-        </>
+        </div>
       )}
     </section>
   )
