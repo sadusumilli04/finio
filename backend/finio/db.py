@@ -90,4 +90,6 @@ def init_db(conn: sqlite3.Connection) -> None:
         conn.executemany(
             "INSERT INTO categories(name) VALUES (?)", [(n,) for n in DEFAULT_CATEGORIES]
         )
+    if conn.execute("PRAGMA user_version").fetchone()[0] == 0:
+        conn.execute("PRAGMA user_version = 1")
     conn.commit()

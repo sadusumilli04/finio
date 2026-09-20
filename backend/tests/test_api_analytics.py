@@ -58,3 +58,11 @@ def test_empty_database(client):
     assert client.get("/api/analytics/spending-by-category").json() == []
     assert client.get("/api/analytics/trends").json() == []
     assert client.get("/api/analytics/top-merchants").json() == []
+
+
+def test_manual_rows_count_in_spending(client, conn, make_account):
+    acct = make_account(source="manual", type="checking")
+    insert_txn(conn, acct, amount=4200, merchant="Cafe", category="Restaurants",
+               origin="manual", category_source="manual")
+    data = client.get("/api/analytics/spending-by-category").json()
+    assert [(d["category"], d["total"]) for d in data] == [("Restaurants", 4200)]

@@ -81,3 +81,16 @@ def test_missing_columns_raises():
 def test_utf8_bom_handled():
     data = b"\xef\xbb\xbf" + FIXTURE.read_bytes()
     assert len(AppleCardCsvImporter().parse(data).rows) == 6
+
+
+def test_non_finite_and_overflow_amounts_are_row_errors():
+    text = (
+        HEADER
+        + '09/01/2026,09/02/2026,"X","Shop","Shopping","Purchase","Infinity","A"\n'
+        + '09/01/2026,09/02/2026,"X","Shop","Shopping","Purchase","NaN","A"\n'
+        + '09/01/2026,09/02/2026,"X","Shop","Shopping","Purchase","1e999999","A"\n'
+        + '09/01/2026,09/02/2026,"X","Shop","Shopping","Purchase","7.25","A"\n'
+    )
+    result = parse(text)
+    assert [e.line for e in result.errors] == [2, 3, 4]
+    assert len(result.rows) == 1 and result.rows[0].amount == 725

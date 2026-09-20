@@ -153,3 +153,14 @@ def test_import_rolls_back_new_categories_on_failure(conn, make_account):
         assert batch_count == 0
     finally:
         ingestion.clean_merchant = original_clean_merchant
+
+
+def test_flagged_counts_only_inserted_rows(conn, make_account):
+    acct = make_account()
+    header = LINES[0]
+    mystery = '09/01/2026,09/02/2026,"X","Shop","Shopping","Mystery","1.00","A"\n'
+    normal = '09/03/2026,09/04/2026,"Y","Cafe","Restaurants","Purchase","2.00","A"\n'
+    s1 = import_file(conn, acct, "a.csv", (header + mystery).encode())
+    assert s1.flagged == 1
+    s2 = import_file(conn, acct, "b.csv", (header + mystery + normal).encode())
+    assert (s2.rows_added, s2.rows_skipped, s2.flagged) == (1, 1, 0)

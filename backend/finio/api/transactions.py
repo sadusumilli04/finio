@@ -56,7 +56,7 @@ def merchants(conn: sqlite3.Connection = Depends(get_conn)):
 class ManualTransactionIn(BaseModel):
     account_id: int
     date: dt.date
-    amount: int = Field(gt=0)
+    amount: int = Field(gt=0, le=10**12)
     direction: Literal["expense", "income", "refund"]
     merchant: str
     description: str | None = None
@@ -74,7 +74,7 @@ class ManualTransactionIn(BaseModel):
 class TransactionPatch(BaseModel):
     category_id: int | None = None
     date: dt.date | None = None
-    amount: int | None = Field(default=None, gt=0)
+    amount: int | None = Field(default=None, gt=0, le=10**12)
     direction: Literal["expense", "income", "refund"] | None = None
     merchant: str | None = None
     description: str | None = None

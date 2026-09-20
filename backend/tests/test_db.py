@@ -44,3 +44,12 @@ def test_fingerprint_occurrence_unique_but_nulls_allowed(conn, make_account):
         conn.execute(sql, (acct, cat, "abc", 1))
     conn.execute(sql, (acct, cat, None, None))
     conn.execute(sql, (acct, cat, None, None))  # manual rows have NULL fingerprints
+
+
+def test_schema_version_stamped_and_not_lowered(conn):
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 1
+    init_db(conn)
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 1
+    conn.execute("PRAGMA user_version = 5")
+    init_db(conn)
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 5

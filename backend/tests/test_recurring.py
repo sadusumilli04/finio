@@ -58,3 +58,11 @@ def test_endpoint_groups_by_merchant_and_ignores_non_purchases(client, conn, mak
     data = client.get("/api/analytics/recurring").json()
     assert [d["merchant"] for d in data] == ["Netflix"]
     assert data[0]["cadence"] == "monthly"
+
+
+def test_manual_rows_detected_as_recurring(client, conn, make_account):
+    acct = make_account(source="manual", type="checking")
+    for d in ("2026-07-10", "2026-08-10", "2026-09-10"):
+        insert_txn(conn, acct, date=d, amount=1500, merchant="Gym", origin="manual", category_source="manual")
+    data = client.get("/api/analytics/recurring").json()
+    assert any(r["merchant"] == "Gym" and r["cadence"] == "monthly" for r in data)

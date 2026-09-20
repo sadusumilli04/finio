@@ -127,27 +127,36 @@ def test_manual_category_survives_rule_reapply(client, conn):
 def test_explicit_null_rejected_for_non_nullable_fields(client):
     acct = manual_account(client)
     tid = create(client, acct, description="Lunch", cardholder="Ann").json()["id"]
-    original = client.get(f"/api/transactions/{tid}").json()
 
-    # Test date null -> 400
-    r = client.patch(f"/api/transactions/{tid}", json={"date": None})
-    assert r.status_code == 400, r.text
-    assert client.get(f"/api/transactions/{tid}").json() == original
+    def row():
+        items = client.get("/api/transactions").json()["items"]
+        return next(t for t in items if t["id"] == tid)
 
-    # Test amount null -> 400
-    r = client.patch(f"/api/transactions/{tid}", json={"amount": None})
-    assert r.status_code == 400, r.text
-    assert client.get(f"/api/transactions/{tid}").json() == original
+    original = row()
+    assert original["merchant"] == "Corner Cafe"
+    for field in ("date", "amount", "merchant", "direction"):
+        r = client.patch(f"/api/transactions/{tid}", json={field: None})
+        assert r.status_code == 400, (field, r.text)
+        assert row() == original, field
 
-    # Test merchant null -> 400
-    r = client.patch(f"/api/transactions/{tid}", json={"merchant": None})
-    assert r.status_code == 400, r.text
-    assert client.get(f"/api/transactions/{tid}").json() == original
 
-    # Test direction null -> 400
-    r = client.patch(f"/api/transactions/{tid}", json={"direction": None})
-    assert r.status_code == 400, r.text
-    assert client.get(f"/api/transactions/{tid}").json() == original
+def test_null_merchant_on_imported_row_is_forbidden_not_bad_request(client):
+    apple = client.post("/api/accounts", json={"name": "Apple", "type": "credit_card", "source": "apple_card_csv"}).json()
+    client.post("/api/imports", data={"account_id": apple["id"]}, files={"file": ("a.csv", FIXTURE)})
+    row = client.get("/api/transactions", params={"merchant": "target"}).json()["items"][0]
+    r = client.patch(f"/api/transactions/{row['id']}", json={"merchant": None})
+    assert r.status_code == 403, r.text
+    again = next(t for t in client.get("/api/transactions").json()["items"] if t["id"] == row["id"])
+    assert again == row
+
+
+def test_amount_upper_bound(client):
+    acct = manual_account(client)
+    assert create(client, acct, amount=10**30).status_code == 422
+    assert create(client, acct, amount=10**12).status_code == 201
+    tid = create(client, acct).json()["id"]
+    assert client.patch(f"/api/transactions/{tid}", json={"amount": 10**30}).status_code == 422
+    assert client.patch(f"/api/transactions/{tid}", json={"amount": 10**12}).status_code == 200
 
 
 def test_explicit_null_clears_nullable_fields(client):

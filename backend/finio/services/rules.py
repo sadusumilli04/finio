@@ -42,21 +42,22 @@ def resolve_category(
 
 
 def reapply_rules(conn: sqlite3.Connection) -> int:
+    """Re-derive the category of every non-manual row: rule match, else the import default."""
     rules = load_rules(conn)
     rows = conn.execute(
-        "SELECT id, merchant_clean, raw_description, category_id, category_source "
+        "SELECT id, merchant_clean, raw_description, source_category, category_id, category_source "
         "FROM transactions WHERE category_source != 'manual'"
     ).fetchall()
     changed = 0
     with conn:
         for row in rows:
-            for rule in rules:
-                if rule_matches(rule, row["merchant_clean"], row["raw_description"]):
-                    if row["category_id"] != rule["category_id"] or row["category_source"] != "rule":
-                        conn.execute(
-                            "UPDATE transactions SET category_id = ?, category_source = 'rule' WHERE id = ?",
-                            (rule["category_id"], row["id"]),
-                        )
-                        changed += 1
-                    break
+            category_id, source = resolve_category(
+                conn, rules, row["merchant_clean"], row["raw_description"], row["source_category"]
+            )
+            if row["category_id"] != category_id or row["category_source"] != source:
+                conn.execute(
+                    "UPDATE transactions SET category_id = ?, category_source = ? WHERE id = ?",
+                    (category_id, source, row["id"]),
+                )
+                changed += 1
     return changed

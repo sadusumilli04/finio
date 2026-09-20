@@ -109,3 +109,35 @@ def test_reapply_skips_manual_and_updates_others(conn, make_account):
     assert rows[a]["category_id"] == cat_id(conn, "Grocery") and rows[a]["category_source"] == "rule"
     assert rows[b]["category_id"] == cat_id(conn, "Other") and rows[b]["category_source"] == "manual"
     assert rows[c]["category_id"] == cat_id(conn, "Other")
+
+
+def test_reapply_reverts_rows_when_rule_removed(conn, make_account):
+    acct = make_account()
+    a = insert_txn(conn, acct, merchant="Target Store", category="Grocery", source_category="Grocery")
+    m = insert_txn(conn, acct, merchant="Target Store", category="Other",
+                   category_source="manual", origin="manual")
+    add_rule(conn, "target", "Shopping")
+    assert reapply_rules(conn) == 1
+    row = conn.execute("SELECT * FROM transactions WHERE id=?", (a,)).fetchone()
+    assert row["category_id"] == cat_id(conn, "Shopping") and row["category_source"] == "rule"
+
+    conn.execute("DELETE FROM category_rules")
+    conn.commit()
+    assert reapply_rules(conn) == 1
+    row = conn.execute("SELECT * FROM transactions WHERE id=?", (a,)).fetchone()
+    assert row["category_id"] == cat_id(conn, "Grocery") and row["category_source"] == "source_default"
+    assert reapply_rules(conn) == 0
+    man = conn.execute("SELECT * FROM transactions WHERE id=?", (m,)).fetchone()
+    assert man["category_id"] == cat_id(conn, "Other") and man["category_source"] == "manual"
+
+
+def test_reapply_reverts_to_other_when_no_source_label(conn, make_account):
+    acct = make_account()
+    a = insert_txn(conn, acct, merchant="Target Store", category="Other")
+    add_rule(conn, "target", "Shopping")
+    reapply_rules(conn)
+    conn.execute("DELETE FROM category_rules")
+    conn.commit()
+    assert reapply_rules(conn) == 1
+    row = conn.execute("SELECT * FROM transactions WHERE id=?", (a,)).fetchone()
+    assert row["category_id"] == cat_id(conn, "Other") and row["category_source"] == "source_default"

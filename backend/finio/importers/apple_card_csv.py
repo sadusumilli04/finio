@@ -1,7 +1,7 @@
 import csv
 import io
 from datetime import datetime
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from .base import ParseResult, RawTransaction, RowError
 
@@ -38,7 +38,7 @@ class AppleCardCsvImporter:
             line = reader.line_num
             try:
                 result.rows.append(self._parse_row(row))
-            except (ValueError, InvalidOperation) as exc:
+            except (ValueError, ArithmeticError) as exc:
                 result.errors.append(RowError(line=line, message=str(exc) or "invalid row"))
         return result
 

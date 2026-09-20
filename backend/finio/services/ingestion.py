@@ -48,7 +48,7 @@ def import_file(conn: sqlite3.Connection, account_id: int, filename: str, conten
     fps = [fingerprint(account_id, r) for r in result.rows]
     occurrences = assign_occurrences(fps)
 
-    added = skipped = 0
+    added = skipped = flagged = 0
     with conn:
         batch_id = conn.execute(
             "INSERT INTO import_batches(account_id, filename, file_hash, imported_at) VALUES (?,?,?,?)",
@@ -74,6 +74,7 @@ def import_file(conn: sqlite3.Connection, account_id: int, filename: str, conten
                  category_source, raw.source_category, fp, occ, json.dumps(raw.raw_row)),
             )
             added += 1
+            flagged += raw.flagged
         conn.execute(
             "UPDATE import_batches SET rows_total=?, rows_added=?, rows_skipped=? WHERE id=?",
             (len(result.rows), added, skipped, batch_id),
@@ -84,6 +85,6 @@ def import_file(conn: sqlite3.Connection, account_id: int, filename: str, conten
         rows_total=len(result.rows),
         rows_added=added,
         rows_skipped=skipped,
-        flagged=sum(1 for r in result.rows if r.flagged),
+        flagged=flagged,
         errors=result.errors,
     )
