@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, stdlib `sqlite3`, pytest + httpx; React + TypeScript (Vite), react-router-dom, Recharts, Vitest. Node 22.
 
-**Spec:** `docs/superpowers/specs/2026-09-20-finio-design.md`
+**Spec:** `SPECIFICATION.md`
 
 ## Global Constraints
 
