@@ -25,6 +25,8 @@ npx tsc -b         # type-check
 npm run build
 ```
 
+Node here is 22.11, so `vite` ^6, `@vitejs/plugin-react` ^4 and `vitest` ^3 are pinned; do not upgrade to Vite 7/8 (need Node >=22.12) unless Node is upgraded.
+
 The database is `backend/data/finio.sqlite3` (override with the `FINIO_DB` env var).
 
 ## Architecture

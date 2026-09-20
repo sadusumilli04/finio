@@ -1,0 +1,47 @@
+# Finio
+
+A local, private Mint-style analyzer for Apple Card transactions. Import monthly CSV exports, add transactions from other accounts by hand, and see spending by category, trends, top merchants, and recurring charges. All data stays in a SQLite file on this machine.
+
+Design docs: [docs/SPECIFICATION.md](docs/SPECIFICATION.md), [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md), [docs/TASK.md](docs/TASK.md).
+
+## Setup
+
+```bash
+# backend (Python 3.13)
+cd backend
+python3 -m venv .venv
+.venv/bin/pip install -e '.[dev]'
+
+# frontend (Node 22.11+ works with the committed lockfile)
+cd ../frontend
+npm ci        # or: npm install
+```
+
+The frontend pins `vite` ^6, `@vitejs/plugin-react` ^4 and `vitest` ^3 because Node 22.11 is supported. Vite 7/8 need Node >= 22.12, so do not upgrade them unless Node is upgraded.
+
+## Run
+
+```bash
+# terminal 1
+cd backend && .venv/bin/uvicorn finio.main:app --port 8000
+
+# terminal 2
+cd frontend && npm run dev     # open http://localhost:5173
+```
+
+The database is created at `backend/data/finio.sqlite3` (override with `FINIO_DB`).
+
+## Use
+
+1. **Accounts**: create an account with source "Apple Card CSV import".
+2. **Import**: export a statement CSV from Wallet (Apple Card, Statements) and drop it in. Overlapping exports are safe: rows already stored are skipped, and importing the exact same file twice is rejected. If an imported row's category is not in your category set, that category is created and kept (for example Apple's payment rows create a "Payment" category). `Other` is used only for rows with no category.
+3. **Transactions**: recategorize inline, use "Make rule" to categorize a merchant automatically from now on, and use "Add transaction" to enter transactions from other sites by hand. Manual transactions require a category that you pick. Rules recategorize matching existing transactions too, but never override a category you set by hand.
+
+## Test
+
+```bash
+cd backend && .venv/bin/pytest
+cd frontend && npm test
+```
+
+Never commit real statements: `*.csv` is git-ignored except `backend/tests/fixtures/`, which holds fabricated rows only.
