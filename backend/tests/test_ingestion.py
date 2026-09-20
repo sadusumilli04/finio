@@ -96,3 +96,60 @@ def test_errors(conn, make_account):
     with pytest.raises(ValidationFailed):
         import_file(conn, acct, "junk.csv", b"a,b\n1,2\n")
     assert conn.execute("SELECT COUNT(*) FROM import_batches").fetchone()[0] == 0
+
+
+def test_unknown_csv_category_becomes_a_category(conn, make_account):
+    acct = make_account()
+    import_file(conn, acct, "sample.csv", FIXTURE)
+    # The payment row has category "Payment" which is not seeded
+    payment = conn.execute(
+        "SELECT t.*, c.name AS cat FROM transactions t JOIN categories c ON c.id=t.category_id "
+        "WHERE merchant_raw = 'Payment'"
+    ).fetchone()
+    assert payment is not None
+    assert payment["cat"] == "Payment"
+    assert payment["category_source"] == "source_default"
+    # Verify the Target row still has Grocery
+    target = conn.execute(
+        "SELECT t.*, c.name AS cat FROM transactions t JOIN categories c ON c.id=t.category_id "
+        "WHERE merchant_raw LIKE 'Target%'"
+    ).fetchone()
+    assert target["cat"] == "Grocery"
+
+
+def test_import_rolls_back_new_categories_on_failure(conn, make_account):
+    acct = make_account()
+    # Create a CSV with two rows where the first has an unknown category
+    csv_content = (
+        "Transaction Date,Clearing Date,Description,Merchant,Category,Type,Amount (USD),Purchased By\n"
+        '09/18/2026,09/19/2026,"TEST1","Test1","Zzz Unknown","Purchase","29.77","Test Person A"\n'
+        '09/18/2026,09/19/2026,"TEST2","Test2","Restaurants","Purchase","10.44","Test Person B"\n'
+    ).encode()
+
+    # Monkeypatch clean_merchant to raise RuntimeError on its second call
+    from finio.services import ingestion
+    original_clean_merchant = ingestion.clean_merchant
+    call_count = [0]
+
+    def mock_clean_merchant(raw, aliases):
+        call_count[0] += 1
+        if call_count[0] == 2:
+            raise RuntimeError("Simulated failure")
+        return original_clean_merchant(raw, aliases)
+
+    ingestion.clean_merchant = mock_clean_merchant
+    try:
+        with pytest.raises(RuntimeError, match="Simulated failure"):
+            import_file(conn, acct, "test.csv", csv_content)
+
+        # Verify no category named "Zzz Unknown" exists
+        zzz = conn.execute("SELECT * FROM categories WHERE name = ?", ("Zzz Unknown",)).fetchone()
+        assert zzz is None
+        # Verify no transactions were stored
+        txn_count = conn.execute("SELECT COUNT(*) FROM transactions").fetchone()[0]
+        assert txn_count == 0
+        # Verify no import batch was stored
+        batch_count = conn.execute("SELECT COUNT(*) FROM import_batches").fetchone()[0]
+        assert batch_count == 0
+    finally:
+        ingestion.clean_merchant = original_clean_merchant

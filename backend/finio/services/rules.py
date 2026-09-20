@@ -29,12 +29,15 @@ def resolve_category(
     for rule in rules:
         if rule_matches(rule, merchant, description):
             return rule["category_id"], "rule"
-    if source_category:
+    label = (source_category or "").strip()
+    if label:
         row = conn.execute(
-            "SELECT id FROM categories WHERE lower(name) = lower(?)", (source_category,)
+            "SELECT id FROM categories WHERE lower(name) = lower(?)", (label,)
         ).fetchone()
         if row:
             return row["id"], "source_default"
+        cur = conn.execute("INSERT INTO categories(name) VALUES (?)", (label,))
+        return cur.lastrowid, "source_default"
     return _other_id(conn), "source_default"
 
 

@@ -49,11 +49,52 @@ def test_source_category_used_when_no_rule(conn):
     assert (cid, src) == (cat_id(conn, "Grocery"), "source_default")
 
 
-def test_falls_back_to_other(conn):
-    cid, src = resolve_category(conn, [], "X", "X", "Never Heard Of It")
+def test_blank_or_missing_source_category_falls_back_to_other(conn):
+    # Test None
+    cid, src = resolve_category(conn, [], "X", "X", None)
     assert (cid, src) == (cat_id(conn, "Other"), "source_default")
-    cid, _ = resolve_category(conn, [], "X", "X", None)
-    assert cid == cat_id(conn, "Other")
+    # Test empty string
+    cid, src = resolve_category(conn, [], "X", "X", "")
+    assert (cid, src) == (cat_id(conn, "Other"), "source_default")
+    # Test whitespace-only
+    cid, src = resolve_category(conn, [], "X", "X", "   ")
+    assert (cid, src) == (cat_id(conn, "Other"), "source_default")
+
+
+def test_unknown_source_category_creates_it(conn):
+    cid, src = resolve_category(conn, [], "X", "X", "  Health & Fitness ")
+    assert src == "source_default"
+    # Verify the category was created with the exact stripped label
+    created = conn.execute("SELECT * FROM categories WHERE name = ?", ("Health & Fitness",)).fetchone()
+    assert created is not None
+    assert created["id"] == cid
+
+
+def test_unknown_source_category_reused_not_duplicated(conn):
+    # First call creates the category
+    cid1, _ = resolve_category(conn, [], "X", "X", "New Category")
+    # Second call with same label should reuse it
+    cid2, _ = resolve_category(conn, [], "X", "X", "New Category")
+    assert cid1 == cid2
+    # Third call with different case should also reuse it
+    cid3, _ = resolve_category(conn, [], "X", "X", "NEW CATEGORY")
+    assert cid1 == cid3
+    # Verify exactly one row with that name exists
+    count = conn.execute("SELECT COUNT(*) FROM categories WHERE lower(name) = lower(?)", ("New Category",)).fetchone()[0]
+    assert count == 1
+
+
+def test_rule_match_does_not_create_category(conn):
+    # Add a rule
+    add_rule(conn, "target", "Shopping")
+    rules = load_rules(conn)
+    # Call with a matching rule and an unknown source label
+    cid, src = resolve_category(conn, rules, "Target", "TARGET T-1", "Unknown Category")
+    # Should return the rule's category
+    assert (cid, src) == (cat_id(conn, "Shopping"), "rule")
+    # Verify the unknown category was NOT created
+    unknown = conn.execute("SELECT * FROM categories WHERE name = ?", ("Unknown Category",)).fetchone()
+    assert unknown is None
 
 
 def test_reapply_skips_manual_and_updates_others(conn, make_account):
