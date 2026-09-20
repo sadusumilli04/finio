@@ -38,11 +38,14 @@ export default function Import() {
   return (
     <section>
       <h1>Import</h1>
-      {importable.length === 0 ? (
+      {accounts.error && <p className="error">{accounts.error}</p>}
+      {!accounts.error && accounts.data === null && <p className="muted">Loading…</p>}
+      {accounts.data !== null && importable.length === 0 && (
         <p className="muted">
           No Apple Card account yet. Add one on the Accounts page with source &ldquo;Apple Card CSV import&rdquo;.
         </p>
-      ) : (
+      )}
+      {importable.length > 0 && (
         <>
           <label>
             Account{' '}

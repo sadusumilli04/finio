@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { api, type Direction, type Transaction } from '../api'
+import { localToday } from '../lib/date'
 import { validateManualForm } from '../lib/formValidation'
 import { useFetch } from '../lib/useFetch'
 
@@ -33,7 +34,7 @@ export default function AddTransactionForm({ initial, onDone, onCancel }: Props)
   const merchants = useFetch(api.merchants, [])
 
   const [accountId, setAccountId] = useState(initial ? String(initial.account_id) : remembered(LAST_ACCOUNT))
-  const [date, setDate] = useState(initial?.transaction_date ?? (remembered(LAST_DATE) || new Date().toISOString().slice(0, 10)))
+  const [date, setDate] = useState(initial?.transaction_date ?? (remembered(LAST_DATE) || localToday()))
   const [amount, setAmount] = useState(initial ? (Math.abs(initial.amount) / 100).toFixed(2) : '')
   const [direction, setDirection] = useState<Direction>(initial ? directionOf(initial) : 'expense')
   const [merchant, setMerchant] = useState(initial?.merchant ?? '')

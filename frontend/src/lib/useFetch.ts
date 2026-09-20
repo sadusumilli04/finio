@@ -9,6 +9,7 @@ export function useFetch<T>(fn: () => Promise<T>, deps: unknown[]) {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
+    setError(null)
     fn()
       .then((result) => {
         if (cancelled) return
