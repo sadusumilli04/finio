@@ -16,6 +16,10 @@ A short explanation of each of the 16 tasks in the implementation plan (`docs/su
 10. **Spending analytics.** Spending by category, monthly trends, and top merchants. Counts purchases only, so payments and refunds don't inflate spending.
 11. **Recurring-charge detection.** Finds subscriptions and other repeating charges (weekly, biweekly, monthly, yearly) by looking for at least three charges at regular intervals with similar amounts, and predicts the next expected date.
 
+### Follow-up to Tasks 4 and 5
+
+**Unknown CSV categories.** Added after the plan was written: when an imported row's category isn't in your set, the app creates that category and keeps it on the row instead of falling back to `Other`. `Other` is used only when the row has no category label.
+
 ## Frontend
 
 12. **Frontend scaffold and helpers.** Creates the Vite + React + TypeScript app with a proxy to the backend, and tested helpers for formatting money, parsing amounts typed by the user, building query strings, and fetching data.

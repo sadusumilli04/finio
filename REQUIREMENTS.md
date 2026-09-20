@@ -26,7 +26,7 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 
 ## Categories and rules
 
-- **R13.** I have my own set of categories, seeded from Apple's (Entertainment, Grocery, Insurance, Other, Restaurants, Shopping, Transportation, Utilities). I can add and rename categories, except that `Other` stays.
+- **R13.** I have my own set of categories, seeded from Apple's (Entertainment, Grocery, Insurance, Other, Restaurants, Shopping, Transportation, Utilities). I can add and rename categories, except that `Other` stays. If an imported row has a category that isn't in my set, that category is added and the row keeps it; `Other` is only for rows that have no category at all.
 - **R14.** I can recategorize any transaction, and I can create a rule such as "merchant contains Target -> Grocery" that applies to future imports and can be re-applied to existing transactions.
 - **R15.** A category I set by hand is never overwritten by a rule.
 - **R16.** Messy merchant names (extra whitespace, prefixes like `SQ *`) are cleaned up, with user-defined aliases, so search, rules, and recurring detection work on clean names.
