@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 
 from finio.deps import get_conn
 from finio.services import analytics as svc
+from finio.services.recurring import find_recurring
 
 router = APIRouter(prefix="/analytics")
 
@@ -39,3 +40,8 @@ def top_merchants(
     conn: sqlite3.Connection = Depends(get_conn),
 ):
     return svc.top_merchants(conn, limit=limit, **filters)
+
+
+@router.get("/recurring")
+def recurring(filters: dict = Depends(common_filters), conn: sqlite3.Connection = Depends(get_conn)):
+    return find_recurring(conn, **filters)
