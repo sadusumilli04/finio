@@ -17,6 +17,7 @@ export default function Transactions() {
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const categories = useFetch(api.categories, [])
   const txns = useFetch(
@@ -26,23 +27,51 @@ export default function Transactions() {
 
   useEffect(() => setPage(0), [filters, q, categoryId, sort, order])
 
+  const messageOf = (err: unknown) => (err instanceof Error ? err.message : String(err))
+
   async function recategorize(t: Transaction, newCategoryId: number) {
-    await api.updateTransaction(t.id, { category_id: newCategoryId })
-    txns.reload()
+    setActionError(null)
+    setNotice(null)
+    try {
+      await api.updateTransaction(t.id, { category_id: newCategoryId })
+    } catch (err) {
+      setActionError(messageOf(err))
+    } finally {
+      txns.reload()
+    }
   }
 
   async function makeRule(t: Transaction) {
     if (!window.confirm(`Always categorize merchants containing "${t.merchant}" as ${t.category}?`)) return
-    await api.createRule({ match_field: 'merchant', match_type: 'contains', pattern: t.merchant, category_id: t.category_id })
-    const { updated } = await api.reapplyRules()
-    setNotice(`Rule created; ${updated} transaction(s) recategorized.`)
-    txns.reload()
+    setActionError(null)
+    setNotice(null)
+    let created = false
+    try {
+      await api.createRule({ match_field: 'merchant', match_type: 'contains', pattern: t.merchant, category_id: t.category_id })
+      created = true
+      const { updated } = await api.reapplyRules()
+      setNotice(`Rule created; ${updated} transaction(s) recategorized.`)
+    } catch (err) {
+      setActionError(
+        created
+          ? `The rule was created, but re-applying it failed: ${messageOf(err)}. Do not add it again.`
+          : messageOf(err),
+      )
+    } finally {
+      txns.reload()
+    }
   }
 
   async function remove(t: Transaction) {
     if (!window.confirm(`Delete ${t.merchant} on ${t.transaction_date}?`)) return
-    await api.deleteTransaction(t.id)
-    txns.reload()
+    setActionError(null)
+    setNotice(null)
+    try {
+      await api.deleteTransaction(t.id)
+      txns.reload()
+    } catch (err) {
+      setActionError(messageOf(err))
+    }
   }
 
   const total = txns.data?.total ?? 0
@@ -88,7 +117,8 @@ export default function Transactions() {
       )}
 
       {notice && <p className="muted">{notice}</p>}
-      {txns.error && <p className="error">{txns.error}</p>}
+      {actionError && <p className="error">{actionError}</p>}
+      {txns.error &&<p className="error">{txns.error}</p>}
 
       <table>
         <thead>
