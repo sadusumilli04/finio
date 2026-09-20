@@ -2,8 +2,9 @@
 
 Local, private Mint-style analyzer for Apple Card transactions. Imports Apple Card CSV exports, accepts manually entered transactions for other accounts, and shows spending by category, trends, top merchants, and recurring charges. All data stays in a local SQLite file. A native Apple client may come later, so core logic lives behind the API and the browser UI is just one client.
 
-- Spec: `SPECIFICATION.md` (binding design authority)
+- Spec: `docs/SPECIFICATION.md` (binding design authority)
 - Plan: `docs/superpowers/plans/2026-09-20-finio-implementation.md` (task-by-task build order)
+- Requirements: `docs/REQUIREMENTS.md`; task summaries: `docs/TASK.md`
 
 ## Commands
 

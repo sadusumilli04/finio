@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, stdlib `sqlite3`, pytest + httpx; React + TypeScript (Vite), react-router-dom, Recharts, Vitest. Node 22.
 
-**Spec:** `SPECIFICATION.md`
+**Spec:** `docs/SPECIFICATION.md`
 
 ## Global Constraints
 
