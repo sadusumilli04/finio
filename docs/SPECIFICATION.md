@@ -35,7 +35,7 @@ Columns: Transaction Date, Clearing Date, Description, Merchant, Category, Type,
   - `fingerprint`, `occurrence` (null for manual entries)
   - `raw_row` (JSON of the original CSV row; null for manual entries)
 - **Deduplication:** `fingerprint` is a hash of account, transaction date, clearing date, amount, and raw description. `occurrence` counts identical fingerprints within a file. Uniqueness is on `(fingerprint, occurrence)` where fingerprint is not null. Overlapping exports skip stored rows; identical same-day purchases both survive.
-- **categories**: `id`, `name`, `parent_id` (optional, one level). Seeded from Apple's labels; user can add and rename. When an imported row carries a category label that matches no existing category (case-insensitive), a category with that label is created and the row keeps it; `Other` is used only when the row has no category label at all.
+- **categories**: `id`, `name`, `parent_id` (optional, one level). Seeded from Apple's labels; user can add and rename. When an imported row carries a category label that matches no existing category (case-insensitive), a category with that label is created and the row keeps it; `Other` is used only when the row has no category label at all. Known limitation: renaming a category does not prevent a later import whose CSV label is the old name from re-creating it (spending then splits across the two names); a category-alias mechanism is future work.
 - **category_rules**: `id`, `match_field` (merchant or description), `match_type` (contains or equals), `pattern`, `category_id`, `priority`. Applied on import and re-appliable to history. Rules never overwrite `category_source = manual`.
 - **merchant_aliases**: `pattern -> clean name`, used to produce `merchant_clean`.
 - Recurring charges are computed at query time, not stored.
@@ -66,7 +66,7 @@ For accounts that have no importer (other banks, cards, websites), the user adds
 - `POST /transactions`: create a manual transaction
 - `PATCH /transactions/{id}`: recategorize any transaction; edit any field of a manual one
 - `DELETE /transactions/{id}`: manual transactions only
-- `GET/POST/PATCH/DELETE /categories` and `/rules`; `POST /rules/reapply`
+- `GET/POST/PATCH/DELETE /categories` and `/rules`; `GET /rules/{id}`; `POST /rules/reapply` (re-derives every non-manual row: rule match, else the source category)
 - `GET /analytics/spending-by-category`, `/trends`, `/top-merchants`, `/recurring`. "Spending" excludes payments and refunds by default. Recurring uses an interval and variance heuristic on `merchant_clean`.
 
 ## UI (React + TypeScript, Vite)

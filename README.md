@@ -29,6 +29,8 @@ cd backend && .venv/bin/uvicorn finio.main:app --port 8000
 cd frontend && npm run dev     # open http://localhost:5173
 ```
 
+Run uvicorn without `--host` so it stays bound to localhost; that keeps your financial data off the LAN.
+
 The database is created at `backend/data/finio.sqlite3` (override with `FINIO_DB`).
 
 ## Use
@@ -41,7 +43,13 @@ The database is created at `backend/data/finio.sqlite3` (override with `FINIO_DB
 
 ```bash
 cd backend && .venv/bin/pytest
-cd frontend && npm test
+cd ../frontend && npm test
 ```
 
 Never commit real statements: `*.csv` is git-ignored except `backend/tests/fixtures/`, which holds fabricated rows only.
+
+## Known limitations
+
+- Renaming a category does not stop a later import whose CSV label is the old name from re-creating that old category, so spending then splits across the two names. A category-alias mechanism is future work.
+- The dedup fingerprint includes the Clearing Date, so if a transaction's clearing date changes between two exports it can be imported twice.
+- There is no undo for an import batch or for a bulk "Make rule" beyond deleting the rule and re-applying rules (which restores source categories).
