@@ -50,6 +50,6 @@ Never commit real statements: `*.csv` is git-ignored except `backend/tests/fixtu
 
 ## Known limitations
 
-- Renaming a category does not stop a later import whose CSV label is the old name from re-creating that old category, so spending then splits across the two names. A category-alias mechanism is future work.
+- Renaming a category does not stop a later import whose CSV label is the old name from re-creating that old category, so spending then splits across the two names. Re-applying rules (for example after "Make rule") does the same for existing imported transactions: rows that no rule matches go back to their CSV category, which re-creates the old name and moves them out of the renamed one. A category-alias mechanism is future work.
 - The dedup fingerprint includes the Clearing Date, so if a transaction's clearing date changes between two exports it can be imported twice.
 - There is no undo for an import batch or for a bulk "Make rule" beyond deleting the rule and re-applying rules (which restores source categories).
