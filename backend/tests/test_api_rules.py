@@ -40,6 +40,33 @@ def test_reapply(client, conn, make_account):
     assert client.post("/api/rules/reapply").json() == {"updated": 0}
 
 
+def test_rule_patch_validation(client):
+    # Create a rule to patch
+    r = client.post("/api/rules", json=rule_body(client))
+    assert r.status_code == 201
+    rule = r.json()
+    original_pattern = rule["pattern"]
+    original_priority = rule["priority"]
+
+    # Explicit nulls should be rejected for each field
+    assert client.patch(f"/api/rules/{rule['id']}", json={"pattern": None}).status_code == 422
+    assert client.patch(f"/api/rules/{rule['id']}", json={"category_id": None}).status_code == 422
+    assert client.patch(f"/api/rules/{rule['id']}", json={"priority": None}).status_code == 422
+    assert client.patch(f"/api/rules/{rule['id']}", json={"match_field": None}).status_code == 422
+    assert client.patch(f"/api/rules/{rule['id']}", json={"match_type": None}).status_code == 422
+
+    # Verify rule is unchanged after failed patches
+    unchanged = client.get(f"/api/rules/{rule['id']}").json()
+    assert unchanged["pattern"] == original_pattern
+    assert unchanged["priority"] == original_priority
+
+    # PATCH with blank pattern should be rejected
+    assert client.patch(f"/api/rules/{rule['id']}", json={"pattern": "  "}).status_code == 422
+
+    # PATCH with nonexistent category_id should be rejected
+    assert client.patch(f"/api/rules/{rule['id']}", json={"category_id": 9999}).status_code == 400
+
+
 def test_alias_crud(client):
     r = client.post("/api/aliases", json={"pattern": "sq *", "clean_name": "Square Vendor"})
     assert r.status_code == 201

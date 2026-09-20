@@ -2,7 +2,7 @@ import sqlite3
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Response
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from finio.deps import get_conn
 from finio.errors import NotFoundError, ValidationFailed
@@ -36,6 +36,13 @@ class RulePatch(BaseModel):
 
     _check_pattern = field_validator("pattern")(_not_blank)
 
+    @model_validator(mode="after")
+    def reject_explicit_nulls(self):
+        null_fields = [k for k in self.model_fields_set if getattr(self, k) is None]
+        if null_fields:
+            raise ValueError(f"Explicit nulls not allowed for: {', '.join(null_fields)}")
+        return self
+
 
 class AliasIn(BaseModel):
     pattern: str
@@ -62,6 +69,11 @@ def list_rules(conn: sqlite3.Connection = Depends(get_conn)):
     return [dict(r) for r in conn.execute("SELECT * FROM category_rules ORDER BY priority, id")]
 
 
+@router.get("/rules/{rule_id}")
+def get_rule(rule_id: int, conn: sqlite3.Connection = Depends(get_conn)):
+    return _get_rule(conn, rule_id)
+
+
 @router.post("/rules/reapply")
 def reapply(conn: sqlite3.Connection = Depends(get_conn)):
     return {"updated": reapply_rules(conn)}
@@ -81,7 +93,7 @@ def create_rule(body: RuleIn, conn: sqlite3.Connection = Depends(get_conn)):
 @router.patch("/rules/{rule_id}")
 def update_rule(rule_id: int, body: RulePatch, conn: sqlite3.Connection = Depends(get_conn)):
     current = _get_rule(conn, rule_id)
-    fields = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    fields = {k: v for k, v in body.model_dump(exclude_unset=True).items()}
     if "category_id" in fields:
         _require_category(conn, fields["category_id"])
     merged = {**current, **fields}
