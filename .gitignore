@@ -1,2 +1,12 @@
-.superpowers/
-.claude/worktrees/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+frontend/dist/
+backend/data/
+*.sqlite3
+*.db
+.DS_Store
+*.csv
+!backend/tests/fixtures/*.csv
