@@ -1,4 +1,4 @@
-import { useState, type DragEvent } from 'react'
+import { useRef, useState, type DragEvent } from 'react'
 import { api, type ImportSummary } from '../api'
 import { useFetch } from '../lib/useFetch'
 
@@ -9,10 +9,13 @@ export default function Import() {
   const [summary, setSummary] = useState<ImportSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const inFlight = useRef(false)
   const selected = accountId ?? importable[0]?.id ?? null
 
   async function upload(file: File) {
+    if (inFlight.current) return
     if (selected === null) return setError('Create an Apple Card account first')
+    inFlight.current = true
     setBusy(true)
     setError(null)
     setSummary(null)
@@ -21,6 +24,7 @@ export default function Import() {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
+      inFlight.current = false
       setBusy(false)
     }
   }
@@ -42,7 +46,7 @@ export default function Import() {
         <>
           <label>
             Account{' '}
-            <select value={selected ?? ''} onChange={(e) => setAccountId(Number(e.target.value))}>
+            <select value={selected ?? ''} disabled={busy} onChange={(e) => setAccountId(Number(e.target.value))}>
               {importable.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name}
