@@ -1,0 +1,7 @@
+Transaction Date,Clearing Date,Description,Merchant,Category,Type,Amount (USD),Purchased By
+09/18/2026,09/19/2026,"TARGET T-0323 CUPERTINO CA USA","Target","Grocery","Purchase","29.77","Test Person A"
+09/18/2026,09/19/2026,"FLIK CAFE AZ QPS GAITHERSBURG MD USA","Flik Cafe Az       Qps","Restaurants","Purchase","10.44","Test Person B"
+09/17/2026,09/18/2026,"BLUE BOTTLE COFFEE OAKLAND CA","Blue Bottle","Restaurants","Purchase","5.00","Test Person A"
+09/17/2026,09/18/2026,"BLUE BOTTLE COFFEE OAKLAND CA","Blue Bottle","Restaurants","Purchase","5.00","Test Person A"
+09/16/2026,09/17/2026,"ACH DEPOSIT INTERNET TRANSFER","Payment","Payment","Payment","-100.00","Test Person A"
+09/15/2026,09/16/2026,"NETFLIX.COM LOS GATOS CA","Netflix","Entertainment","Purchase","15.49","Test Person A"
