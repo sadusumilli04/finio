@@ -9,11 +9,11 @@ A local web app on the user's Mac that analyzes Apple Card transactions, Mint-st
 ## Decisions
 
 - **Ingestion:** Apple Card monthly CSV export (no API exists). PDF is out of scope.
-- **Other sources:** manual entry of transactions, with a user-picked category (see Manual entry).
+- **Other sources:** Venmo statement CSV (see Venmo CSV format), and manual entry of transactions with a user-picked category (see Manual entry).
 - **Runtime:** local only; FastAPI backend, React + TypeScript (Vite) frontend, SQLite. Data never leaves the machine.
 - **Architecture:** layered API with pluggable importers. The raw source row is stored on each imported transaction so parsing and rule changes can be re-applied without re-importing.
 - **v1 features:** spending by category over time, search/filter/recategorize, recurring-charge detection, account model with balances stored.
-- **Out of scope for v1:** budgets, net-worth view, PDF import, auth, hosting, aggregator (Plaid) sync, Venmo integration, per-person split amounts, tracking money owed.
+- **Out of scope for v1:** budgets, net-worth view, PDF import, auth, hosting, aggregator (Plaid) sync, matching Venmo reimbursements to card charges, offsetting spending with money received, per-person split amounts, tracking money owed.
 
 ## Apple Card CSV format
 
@@ -21,21 +21,21 @@ Columns: Transaction Date, Clearing Date, Description, Merchant, Category, Type,
 
 ## Data model (SQLite)
 
-- **accounts**: `id`, `name`, `type` (credit_card, checking, savings, other), `source` (importer key such as `apple_card_csv`, or `manual`), `starting_balance`, `starting_balance_date`. Balances are stored; no net-worth view in v1.
+- **accounts**: `id`, `name`, `type` (credit_card, checking, savings, other), `source` (importer key such as `apple_card_csv` or `venmo_csv`, or `manual`), `starting_balance`, `starting_balance_date`. Balances are stored; no net-worth view in v1.
 - **import_batches**: `id`, `account_id`, `filename`, `file_hash`, `imported_at`, `rows_total`, `rows_added`, `rows_skipped`. Re-importing an identical file is rejected by hash.
 - **transactions**:
   - `id`, `account_id`, `batch_id` (null for manual entries)
   - `posted_date`, `transaction_date`
   - `amount` in integer cents; positive means money spent, negative means money in, normalized across sources
-  - `type` (purchase, payment, refund, income, other)
+  - `type` (purchase, payment, refund, income, transfer, other)
   - `raw_description`, `merchant_raw`, `merchant_clean`
   - `cardholder`
   - `category_id`, `category_source` (`source_default`, `rule`, `manual`), `source_category`
   - `origin` (`import` or `manual`)
   - `fingerprint`, `occurrence` (null for manual entries)
   - `raw_row` (JSON of the original CSV row; null for manual entries)
-  - `my_share` (integer cents, nullable; the part of a purchase that was the user's, null when unsplit, `0 <= my_share <= amount`) and `share_source` (`manual`, or `venmo`, reserved for a later Venmo importer; null together with `my_share`). The effective amount is `COALESCE(my_share, amount)`, defined once in `backend/finio/services/amounts.py`. The charge `amount` is never modified, so the app keeps matching the statement.
-- **Deduplication:** `fingerprint` is a hash of account, transaction date, clearing date, amount, and raw description. `occurrence` counts identical fingerprints within a file. Uniqueness is on `(fingerprint, occurrence)` where fingerprint is not null. Overlapping exports skip stored rows; identical same-day purchases both survive.
+  - `my_share` (integer cents, nullable; the part of a purchase that was the user's, null when unsplit, `0 <= my_share <= amount`) and `share_source` (`manual`, or `venmo`, reserved for a later step that matches Venmo reimbursements to charges; null together with `my_share`). The effective amount is `COALESCE(my_share, amount)`, defined once in `backend/finio/services/amounts.py`. The charge `amount` is never modified, so the app keeps matching the statement.
+- **Deduplication:** `fingerprint` is a hash of account, transaction date, clearing date, amount, and raw description. Rows that carry an `external_id` (Venmo's transaction `ID`) are instead hashed from the account and the `external_id` only, so the recipe for Apple rows is unchanged. `occurrence` counts identical fingerprints within a file. Uniqueness is on `(fingerprint, occurrence)` where fingerprint is not null. Overlapping exports skip stored rows; identical same-day purchases both survive.
 - **categories**: `id`, `name`, `parent_id` (optional, one level). Seeded from Apple's labels; user can add and rename. When an imported row carries a category label that matches no existing category (case-insensitive), a category with that label is created and the row keeps it; `Other` is used only when the row has no category label at all. Known limitation: renaming a category does not prevent a later import whose CSV label is the old name from re-creating it (spending then splits across the two names). Re-applying rules has the same effect on existing imported transactions that no rule matches, since they revert to their CSV category. A category-alias mechanism is future work.
 - **category_rules**: `id`, `match_field` (merchant or description), `match_type` (contains or equals), `pattern`, `category_id`, `priority`. Applied on import and re-appliable to history. Rules never overwrite `category_source = manual`.
 - **merchant_aliases**: `pattern -> clean name`, used to produce `merchant_clean`.
@@ -45,9 +45,30 @@ Columns: Transaction Date, Clearing Date, Description, Merchant, Category, Type,
 ## Importers and ingestion
 
 - Each importer implements `parse(file) -> list[RawTransaction]`. `RawTransaction` is the normalized shape: dates, integer cents, type, descriptions, cardholder, source category, raw row.
-- `AppleCardCsvImporter` is the only importer in v1. It reads `Amount (USD)` and normalizes signs by `Type`. An unrecognized `Type` is imported as `other` and flagged in the summary.
+- `AppleCardCsvImporter` and `VenmoCsvImporter` (`importers/venmo_csv.py`) are registered in `IMPORTERS` in `services/ingestion.py`. `RawTransaction` has an optional `external_id`. The Apple importer reads `Amount (USD)` and normalizes signs by `Type`. An unrecognized `Type` is imported as `other` and flagged in the summary.
 - Ingestion service order: check file hash, parse, clean merchant via aliases, compute fingerprint and occurrence, insert new rows, apply category rules. It returns a summary: added, skipped as duplicates, flagged.
 - Malformed rows are reported with line numbers and skipped. The whole import runs in one DB transaction.
+
+## Venmo CSV format
+
+Account source `venmo_csv` (account type `other`). The statement starts with a title row (`Account Statement - (@username)`), an `Account Activity` row, the column header row and a balance row; transaction rows follow, each with a leading empty column, then a footer row and a long multi-line legal disclaimer in one quoted cell. The importer finds the header by the `ID` and `Datetime` columns and skips every row without an `ID` (title, balance, footer, disclaimer). A file without the required columns (`ID`, `Datetime`, `Type`, `Status`, `Amount (total)`) is rejected with `Not a Venmo CSV; missing columns: [...]` (400). Relevant columns: `ID`, `Datetime` (ISO), `Type`, `Status`, `Note`, `From`, `To`, `Amount (total)` (written like `- $20.00` or `+ $56.52`, with optional thousands separators). The whole row is kept in `raw_row`.
+
+The `Amount (total)` sign decides the direction (`-` you paid, `+` you received), not the `From`/`To` names.
+
+| Venmo row | `type` | `amount` (cents) | Counts as spending |
+|---|---|---|---|
+| `Payment` or `Charge`, `- $X` | `purchase` | `+X` | yes |
+| `Payment` or `Charge`, `+ $X` | `payment` | `-X` | no (money in) |
+| `Standard Transfer`, `Instant Transfer` | `transfer` | `+X` if `-`, else `-X` | no (kept for the record) |
+| any other `Type` | `other`, flagged | by sign | no |
+
+- **Merchant** (`merchant_raw`): the counterparty. `To` for a Payment you pay, `From` for a Payment you receive, `From` for a Charge you pay, `To` for a Charge you receive. Transfers use `Venmo transfer`.
+- **Description** (`raw_description`): the note; when blank, `Venmo payment`, `Venmo charge`, or the transfer type (for example `Standard Transfer`).
+- **Category:** `source_category` is `Friends & Family` for payments and charges (created on first import by the existing unknown-category behavior) and `Other` for transfers. Rules and manual choices override it as usual, and rules can match on the note.
+- **Dates:** `transaction_date` is the date part of `Datetime`; there is no posted date. There is no cardholder.
+- **Status:** only `Complete` and `Issued` rows are imported. Any other status (`Pending`, `Cancelled`, `Failed`, ...) is reported as a row error `status: X` with its line number and is not imported, so it never counts as spending.
+- **Duplicates:** deduplicated by Venmo `ID` (see Deduplication). A repeated `ID` inside one file is skipped. A bad date or amount is a row error and does not stop the import.
+- **Spending:** analytics count only `type = 'purchase'`, so Venmo payments sent (and charges paid) are spending at the user's share, and transfers and money received are excluded with no analytics change. A payment and its return on the same day are both kept.
 
 ## Manual entry
 
@@ -88,16 +109,16 @@ Screens:
 - **Transactions**: search, filters, inline recategorize, "create rule from this", an **Add transaction** button that opens the manual entry form, and a **Split panel**. A purchase's ⋯ menu offers **Split…** (or **Edit split…** and **Remove split** once split); the panel shows the charge, an "even split among N people" shortcut with **Fill in**, an exact **My share** amount (0 is allowed), and the live "Paid for others" figure. A split row shows the user's share in bold with the full charge beneath it ("of $120.00"); the amount column, sort and amount filters use the effective amount. The Dashboard has no new controls; its numbers reflect the share.
 - **Insights**: a nav item after Dashboard, at `/insights`. A **Person** dropdown ("Everyone" plus each cardholder) beside a month picker (months with spending, newest first, the current one labelled "in progress") with previous/next arrows. A **Month at a glance** card with the total ("so far" while in progress), the change against the compared days in words ("Up $212.00 (+12%) vs Aug 1–20"), the typical month, the rank, and for an in-progress month the day count and pace. Five cards: Biggest movers (went up / went down), New merchants, Merchants that grew, Unusual charges, and Subscription changes (tags Price up, Price down, New, Missing). Each card has a one-line note on how it is computed and its own empty message. States: an error alone, then "Loading…", then the content dimmed while refetching; with no data the page says "Import a statement to see insights", or "No spending for this person" when a person is chosen. Changing the person keeps the selected month if that person has spending in it, otherwise the page jumps to their default month.
 - **Recurring**: detected recurring charges.
-- **Import**: drag and drop, with a results summary.
-- **Accounts**: list, create and delete accounts, including manual accounts. Deleting asks for confirmation and states how many transactions will be removed.
+- **Import**: drag and drop, with a results summary; the account picker lists Apple Card and Venmo accounts.
+- **Accounts**: list, create and delete accounts, including Apple Card, Venmo ("Venmo CSV import") and manual accounts. Deleting asks for confirmation and states how many transactions will be removed.
 
 A cardholder filter is available throughout.
 
 ## Testing and layout
 
-- pytest: importer parsing, dedup and overlap cases, rules and rule priority, manual entry (create, edit, delete, category protection from rules), analytics queries, API tests. Vitest for key UI logic.
+- pytest: importer parsing (Apple and Venmo, `test_venmo_importer.py`, `test_venmo_ingestion.py`), dedup and overlap cases, rules and rule priority, manual entry (create, edit, delete, category protection from rules), analytics queries, API tests. Vitest for key UI logic.
 - Layout: `backend/` (`importers/`, `services/`, `api/`, `db/`) and `frontend/`. The SQLite file and any real CSVs are git-ignored. Test fixtures use fabricated rows only.
 
 ## Open items
 
-None blocking. Decisions deferred beyond v1: budgets, net-worth view, additional importers, native Apple client.
+None blocking. Decisions deferred beyond v1: budgets, net-worth view, matching Venmo reimbursements to card charges, additional importers, native Apple client.

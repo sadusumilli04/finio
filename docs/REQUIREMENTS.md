@@ -54,7 +54,7 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R33.** Transactions start unsplit; I opt in per transaction, and importing never sets a split.
 - **R34.** I enter the split as an exact amount, with a shortcut that splits evenly among N people and fills the amount in.
 - **R35.** The original charge stays intact and visible, so the app keeps matching the card statement.
-- **R36.** The design leaves a place for a later Venmo integration to set the share.
+- **R36.** The design leaves a place for a later step that matches Venmo reimbursements to charges to set the share.
 - **R37.** Top merchants on the Dashboard: I can choose how many to show (5, 10, 25 or 50) and rank them by most spent or by most visits.
 - **R38.** The Dashboard can be filtered by category, in addition to date range, cardholder and account.
 
@@ -70,6 +70,17 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R46.** Insights count only my share of split purchases and leave out $0 shares, like all other spending (R26).
 - **R47.** A Person filter on Insights ("Everyone" or one cardholder) limits every insight, the month list, the typical month and the rank to that person's spending. Changing the person keeps the selected month if that person has spending in it, otherwise it jumps to their latest month.
 
+## Venmo
+
+- **R48.** I can import a Venmo account statement CSV into a Venmo account (source "Venmo CSV import"), through the same Accounts and Import pages. The statement's title, balance, footer and disclaimer rows are ignored; a file that is not a Venmo statement is rejected with a clear error.
+- **R49.** Money I send (a payment, or a charge I pay) is spending, at my share if I split it (R26, R32).
+- **R50.** Money I receive is money in, not spending, and does not reduce spending.
+- **R51.** Transfers to my bank are not spending. They are stored for the record as transfers.
+- **R52.** Importing is duplicate-safe by Venmo transaction ID: overlapping statements skip rows already stored, and a repeated ID inside one file is skipped. Importing the exact same file twice is still rejected (R8).
+- **R53.** Only completed rows (`Complete`, `Issued`) are imported. Pending, cancelled or failed rows are reported as row errors and are never counted as spending.
+- **R54.** Venmo payments and charges default to a new **Friends & Family** category; transfers default to `Other`.
+- **R55.** Category rules (matching the counterparty or the note) and splits work on Venmo rows like any other.
+
 ## Screens
 
 - **R28.** Dashboard, Insights, Transactions, Recurring, Import, and Accounts.
@@ -82,4 +93,4 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 
 ## Out of scope for v1
 
-Budgets, a net-worth view, Venmo integration, per-person split amounts, tracking money owed, PDF import, Plaid or other aggregator sync, auth and hosting, a native Apple app, and screens for managing categories and merchant aliases (these are available through the API).
+Budgets, a net-worth view, matching Venmo reimbursements to card charges, offsetting spending with money received, per-person split amounts, tracking money owed, PDF import, Plaid or other aggregator sync, auth and hosting, a native Apple app, and screens for managing categories and merchant aliases (these are available through the API).

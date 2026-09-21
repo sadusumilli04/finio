@@ -74,7 +74,7 @@ export default function Accounts() {
         </tbody>
       </table>
       )}
-      {accounts.data?.length === 0 &&<p className="muted">No accounts yet. Create your Apple Card account first.</p>}
+      {accounts.data?.length === 0 &&<p className="muted">No accounts yet. Create an account first.</p>}
 
       <h2>Add account</h2>
       <form onSubmit={submit} className="form-row">

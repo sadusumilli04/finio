@@ -1,6 +1,6 @@
 # Finio
 
-Local, private Mint-style analyzer for Apple Card transactions. Imports Apple Card CSV exports, accepts manually entered transactions for other accounts, and shows spending by category, trends, top merchants, and recurring charges. All data stays in a local SQLite file. A native Apple client may come later, so core logic lives behind the API and the browser UI is just one client.
+Local, private Mint-style analyzer for Apple Card transactions. Imports Apple Card and Venmo CSV exports, accepts manually entered transactions for other accounts, and shows spending by category, trends, top merchants, and recurring charges. All data stays in a local SQLite file. A native Apple client may come later, so core logic lives behind the API and the browser UI is just one client.
 
 - Spec: `docs/SPECIFICATION.md` (binding design authority)
 - Plan: `docs/superpowers/plans/2026-09-20-finio-implementation.md` (task-by-task build order)
@@ -33,7 +33,7 @@ The database is `backend/data/finio.sqlite3` (override with the `FINIO_DB` env v
 
 Layered backend: importers -> services -> FastAPI routes; the React UI calls only `/api`.
 
-- `backend/finio/importers/`: one class per source, `parse(bytes) -> ParseResult` of normalized `RawTransaction`s. Adding an account type means adding an importer and registering it in `services/ingestion.py` `IMPORTERS`.
+- `backend/finio/importers/`: one class per source (`apple_card_csv.py`, `venmo_csv.py`), `parse(bytes) -> ParseResult` of normalized `RawTransaction`s. Adding an account type means adding an importer and registering it in `services/ingestion.py` `IMPORTERS`.
 - `backend/finio/services/`: all business logic (ingestion and dedup, category rules, filters, transactions, analytics, recurring detection). Routes stay thin.
 - `backend/finio/services/insights/`: the monthly insights (one small module per group of insights, thresholds in `constants.py`), assembled by `build_insights` behind `GET /api/insights`.
 - `backend/finio/api/`: routers, all mounted under `/api` in `app.py`. Domain errors from `finio/errors.py` (`NotFoundError` 404, `ForbiddenError` 403, `ConflictError` 409, `ValidationFailed` 400) are mapped to HTTP responses centrally; raise them from services instead of using `HTTPException`.
@@ -44,8 +44,8 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 
 - Amounts are integer cents. Positive means money spent; negative means money in (payments, refunds, income). Never use floats for money.
 - Dates are stored as ISO `YYYY-MM-DD`. Apple CSV dates are `MM/DD/YYYY`.
-- "Spending" in analytics counts only `type = 'purchase'`.
-- Dedup: Apple CSVs have no transaction ID. Rows are keyed by `(fingerprint, occurrence)` so overlapping exports skip seen rows while identical same-day purchases both survive. Identical files are rejected by hash.
+- "Spending" in analytics counts only `type = 'purchase'`. Venmo money received is `payment` and bank transfers are `transfer`, so neither counts.
+- Dedup: Apple CSVs have no transaction ID. Rows are keyed by `(fingerprint, occurrence)` so overlapping exports skip seen rows while identical same-day purchases both survive. Identical files are rejected by hash. Rows with an `external_id` (Venmo's transaction `ID`) are keyed by `(account, external_id)` instead, so overlapping Venmo statements skip seen rows.
 - A manually chosen category (`category_source = 'manual'`) is never overwritten by rules.
 - Imported transactions are read-only except category and `my_share`. Only `origin = 'manual'` transactions can be edited or deleted.
 - Every imported transaction keeps its original CSV row in `raw_row` so parsing and rules can be re-applied without re-importing.

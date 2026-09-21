@@ -4,7 +4,7 @@ This guide is for developers who clone the repo and want to test it: run the aut
 
 Commands are for macOS and Linux. On Windows, adjust the paths (`.venv\Scripts\...`) and set environment variables in your shell's own way.
 
-> **Use only the fabricated sample data.** Finio is built for real bank statements, and real financial data must never go into this repo, an issue, or a screenshot. Everything below uses `backend/tests/fixtures/apple_sample.csv`, which contains made-up rows.
+> **Use only the fabricated sample data.** Finio is built for real bank statements, and real financial data must never go into this repo, an issue, or a screenshot. Everything below uses `backend/tests/fixtures/apple_sample.csv` or the small made-up Venmo file given in the Venmo walkthrough.
 
 ## What you need
 
@@ -34,7 +34,7 @@ npm ci
 ## 2. Run the automated tests
 
 ```bash
-cd backend && .venv/bin/pytest -q          # backend: importer, dedup, rules, splits, analytics, insights (tests/test_insights_*.py), API
+cd backend && .venv/bin/pytest -q          # backend: importers, dedup, rules, splits, analytics, insights (tests/test_insights_*.py), Venmo (tests/test_venmo_*.py), API
 cd ../frontend && npm test                 # frontend: helpers (money, dates, filters, splits, ...)
 npm run build                              # type-checks (tsc) and builds the frontend
 ```
@@ -180,12 +180,36 @@ The sample data has one month only, so build a few more first. On a scratch acco
 31. Pick the earliest month. Expect no new merchants, no rank or typical month, and a note about missing history; every category with a change of $10 or more is listed under "went up" and labelled "new" (there is no previous spending to compare with). On an empty database, expect "Import a statement to see insights".
 32. Use the **Person** dropdown next to the month picker. Choose "Test Person B": the totals, cards and month list shrink to that person's spending, and the Streamer subscription and $300 charge disappear. Select Aug first, then switch person: Aug stays selected if they have spending in it. Select Jun, then switch to Test Person B (no spending in Jun): expect the page to jump to their latest month. Switch back to "Everyone" and expect the original numbers. A person with no spending at all shows "No spending for this person".
 
+**Venmo import**
+Save these lines to a file outside the repo, for example `/tmp/venmo-test.csv` (all fabricated; never use a real Venmo statement). Use a scratch database or an empty one.
+
+```csv
+Account Activity,,,,,,,,
+,ID,Datetime,Type,Status,Note,From,To,Amount (total)
+,9000000000000001,2026-09-02T10:00:00,Payment,Complete,Pizza night,Test User,Person One,- $20.00
+,9000000000000002,2026-09-03T12:30:00,Charge,Complete,Movie tickets,Person Two,Test User,- $15.50
+,9000000000000003,2026-09-04T09:00:00,Payment,Complete,Dinner back,Person One,Test User,+ $12.00
+,9000000000000004,2026-09-05T08:00:00,Standard Transfer,Issued,,,,- $30.00
+,9000000000000005,2026-09-06T10:00:00,Payment,Pending,Later,Test User,Person One,- $9.00
+```
+
+The repo also has a larger fabricated sample, `backend/tests/fixtures/venmo_sample.csv`, with a title row, footer and disclaimer like a real statement.
+
+33. **Accounts** page → add an account named "Venmo", type Other, source "Venmo CSV import". Expect it in the table with source "Venmo CSV import".
+34. **Import** page → choose "Venmo" and drop in your file. Expect 4 added and one row error naming line 7 and "status: Pending" (the pending row is not imported).
+35. **Transactions** page, Venmo account. Expect four rows: Person One $20.00 (note "Pizza night"), Person Two $15.50, Person One -$12.00 in green (received), and "Venmo transfer" $30.00 (note "Standard Transfer", category Other). The first three are in the **Friends & Family** category, which is created by the import.
+36. **Dashboard**. Expect total spending $35.50 (the two payments sent), all in Friends & Family. The received $12.00 and the $30.00 transfer are not counted, and the pending row is absent. Top merchants: Person One $20.00, Person Two $15.50.
+37. Import the same file again. Expect the "already imported" error. Save a copy with one more row appended (a new ID) and import it: expect 1 added and the other rows skipped as duplicates.
+38. Split the $20.00 "Pizza night" purchase (⋯ → **Split…**) to $10.00. Expect Dashboard spending of $25.50. Make a rule "description contains Pizza → Restaurants" and expect that row to move to Restaurants while the others stay in Friends & Family.
+39. **Insights** needs at least two months of data to say much; import a second small file of your own with September and October dates (new IDs) to see Venmo spending appear in Insights like any other spending.
+
 ## 7. Things worth trying to break
 
 - Amounts with commas, dollar signs, three decimals, negatives, or very large values.
 - Clicking buttons twice quickly (Import, Save split, Delete).
 - Refreshing the page in the middle of an action.
 - A CSV with a missing column, or with a bad date or amount. The importer should report the bad rows with line numbers and still import the good ones.
+- A Venmo CSV with a missing `ID` or `Amount (total)` column (expect "Not a Venmo CSV"), an amount like `- $1,250.00`, a repeated `ID` inside one file, and a `Cancelled` or `Failed` row.
 - Two overlapping exports: import `apple_sample.csv`, then a copy with extra rows added. Only the new rows should be added, and the two identical Blue Bottle rows should both survive.
 - Very long merchant names, and names with special characters.
 
