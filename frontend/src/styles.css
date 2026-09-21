@@ -185,3 +185,11 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 .pie-legend .legend-percent { text-align: right; color: #66716c; font-variant-numeric: tabular-nums; }
 @media (max-width: 800px) { .chart-pair { grid-template-columns: 1fr; } }
 .median-swatch { display: inline-block; width: 1.5rem; margin-right: 0.5rem; vertical-align: middle; border-top: 2px dashed #1b2421; }
+
+/* ---- Transactions: split panel and split amounts ------------------------------------- */
+.txn-page .amount-of { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--muted); }
+.split-panel .split-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.split-panel .split-head h2 { margin: 0; }
+.split-panel .split-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0.75rem 0; }
+.split-panel .split-row label { display: flex; align-items: center; gap: 0.5rem; }
+.split-panel .split-others { min-width: 12rem; }
