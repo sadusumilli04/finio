@@ -36,7 +36,7 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 - `backend/finio/importers/`: one class per source, `parse(bytes) -> ParseResult` of normalized `RawTransaction`s. Adding an account type means adding an importer and registering it in `services/ingestion.py` `IMPORTERS`.
 - `backend/finio/services/`: all business logic (ingestion and dedup, category rules, filters, transactions, analytics, recurring detection). Routes stay thin.
 - `backend/finio/api/`: routers, all mounted under `/api` in `app.py`. Domain errors from `finio/errors.py` (`NotFoundError` 404, `ForbiddenError` 403, `ConflictError` 409, `ValidationFailed` 400) are mapped to HTTP responses centrally; raise them from services instead of using `HTTPException`.
-- `backend/finio/db.py`: stdlib `sqlite3` with the schema inline, no ORM. Connections are per request (`deps.get_conn`).
+- `backend/finio/db.py`: stdlib `sqlite3` with the schema inline, no ORM; schema version tracked in `PRAGMA user_version`; `_migrate` upgrades existing databases (currently to version 2). Connections are per request (`deps.get_conn`).
 - `frontend/src/api.ts`: the only place that talks to the backend; pages live in `src/pages/`.
 
 ## Conventions and invariants
@@ -46,8 +46,10 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 - "Spending" in analytics counts only `type = 'purchase'`.
 - Dedup: Apple CSVs have no transaction ID. Rows are keyed by `(fingerprint, occurrence)` so overlapping exports skip seen rows while identical same-day purchases both survive. Identical files are rejected by hash.
 - A manually chosen category (`category_source = 'manual'`) is never overwritten by rules.
-- Imported transactions are read-only except category. Only `origin = 'manual'` transactions can be edited or deleted.
+- Imported transactions are read-only except category and `my_share`. Only `origin = 'manual'` transactions can be edited or deleted.
 - Every imported transaction keeps its original CSV row in `raw_row` so parsing and rules can be re-applied without re-importing.
+- Anything that answers "how much did I spend" must use `EFFECTIVE_AMOUNT` from `backend/finio/services/amounts.py` (the user's share when a purchase is split, else the full charge); never re-type the expression or aggregate raw `amount` for spending.
+- A purchase can be split (`my_share`, `share_source`): only purchases, `0 <= my_share <= amount`; imported transactions are read-only except category and `my_share`; the charge `amount` is never modified.
 - `where_clause()` in `services/filters.py` assumes the transactions table is aliased `t`; every query that uses it must alias accordingly.
 
 ## Testing

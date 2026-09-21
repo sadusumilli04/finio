@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Transaction } from '../api'
-import { mergePinned } from './pinnedRows'
+import { mergePinned, replacePinned } from './pinnedRows'
 
 function txn(id: number, category = 'Other'): Transaction {
   return {
@@ -18,6 +18,9 @@ function txn(id: number, category = 'Other'): Transaction {
     category,
     category_source: 'source_default',
     origin: 'import',
+    my_share: null,
+    share_source: null,
+    effective_amount: 1000,
   }
 }
 
@@ -51,5 +54,15 @@ describe('mergePinned', () => {
     const result = mergePinned([txn(5)], [txn(3), txn(4)])
     expect(result.rows.map((r) => r.id)).toEqual([3, 4, 5])
     expect(result.hiddenCount).toBe(2)
+  })
+})
+
+describe('replacePinned', () => {
+  it('replaces the matching id, leaves others, and does not add a missing row', () => {
+    const a = txn(1)
+    const b = txn(2)
+    const fresh = { ...txn(1), my_share: 500 }
+    expect(replacePinned([a, b], fresh)).toEqual([fresh, b])
+    expect(replacePinned([b], fresh)).toEqual([b])
   })
 })

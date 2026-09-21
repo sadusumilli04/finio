@@ -79,6 +79,7 @@ class TransactionPatch(BaseModel):
     merchant: str | None = None
     description: str | None = None
     cardholder: str | None = None
+    my_share: int | None = Field(default=None, le=10**12)
 
     @field_validator("merchant")
     @classmethod

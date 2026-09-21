@@ -4,12 +4,13 @@ import { api, type Filters, type Transaction } from '../api'
 import AddTransactionForm from '../components/AddTransactionForm'
 import FilterBar from '../components/FilterBar'
 import RowMenu from '../components/RowMenu'
+import SplitPanel from '../components/SplitPanel'
 import { amountBounds } from '../lib/amountBounds'
 import { categoryColor } from '../lib/categoryColor'
 import { shortDate } from '../lib/date'
 import { buildChips, type Chip } from '../lib/filterChips'
 import { formatCents } from '../lib/money'
-import { mergePinned } from '../lib/pinnedRows'
+import { mergePinned, replacePinned } from '../lib/pinnedRows'
 import { useFetch } from '../lib/useFetch'
 
 const PAGE_SIZE = 50
@@ -26,6 +27,7 @@ export default function Transactions() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<Transaction | null>(null)
+  const [splitting, setSplitting] = useState<Transaction | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   // Rows just recategorized stay visible (highlighted) even if the active filters no longer match them,
@@ -123,6 +125,18 @@ export default function Transactions() {
     }
   }
 
+  async function removeSplit(t: Transaction) {
+    setActionError(null)
+    setNotice(null)
+    try {
+      const updated = await api.updateTransaction(t.id, { my_share: null })
+      setPinned((prev) => replacePinned(prev, updated))
+      txns.reload()
+    } catch (err) {
+      setActionError(messageOf(err))
+    }
+  }
+
   const merged = txns.data ? mergePinned(txns.data.items, pinned) : null
   const total = txns.data?.total ?? 0
   const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1)
@@ -133,7 +147,7 @@ export default function Transactions() {
     <section className="txn-page">
       <header className="txn-head">
         <h1>Transactions</h1>
-        <button type="button" className="btn btn-primary" onClick={() => { setAdding(true); setEditing(null) }}>
+        <button type="button" className="btn btn-primary" onClick={() => { setAdding(true); setEditing(null); setSplitting(null) }}>
           Add transaction
         </button>
       </header>
@@ -195,7 +209,7 @@ export default function Transactions() {
               <input inputMode="decimal" size={8} value={maxText} onChange={(e) => setMaxText(e.target.value)} />
             </label>
           </div>
-          <p className="muted small">Amounts are per transaction; payments and refunds are negative.</p>
+          <p className="muted small">Amounts are what you spent on each transaction (your share, if it is split); payments and refunds are negative.</p>
         </div>
       )}
 
@@ -222,6 +236,15 @@ export default function Transactions() {
           initial={editing ?? undefined}
           onCancel={() => { setAdding(false); setEditing(null) }}
           onDone={() => { setAdding(false); setEditing(null); txns.reload() }}
+        />
+      )}
+
+      {splitting && (
+        <SplitPanel
+          key={splitting.id}
+          transaction={splitting}
+          onCancel={() => setSplitting(null)}
+          onDone={(updated) => { setSplitting(null); setPinned((prev) => replacePinned(prev, updated)); txns.reload() }}
         />
       )}
 
@@ -273,15 +296,26 @@ export default function Transactions() {
                       ))}
                     </select>
                   </td>
-                  <td className={`num cell-amount ${t.amount < 0 ? 'neg' : ''}`}>{formatCents(t.amount)}</td>
+                  <td className={`num cell-amount ${t.effective_amount < 0 ? 'neg' : ''}`}>
+                    {formatCents(t.effective_amount)}
+                    {t.my_share !== null && <span className="amount-of">of {formatCents(t.amount)}</span>}
+                  </td>
                   <td className="cell-actions">
                     <RowMenu
                       label={`Actions for ${t.merchant}`}
                       items={[
+                        ...(t.type === 'purchase'
+                          ? t.my_share === null
+                            ? [{ label: 'Split…', onSelect: () => { setSplitting(t); setAdding(false); setEditing(null) } }]
+                            : [
+                                { label: 'Edit split…', onSelect: () => { setSplitting(t); setAdding(false); setEditing(null) } },
+                                { label: 'Remove split', onSelect: () => void removeSplit(t) },
+                              ]
+                          : []),
                         { label: 'Make rule', onSelect: () => void makeRule(t) },
                         ...(t.origin === 'manual'
                           ? [
-                              { label: 'Edit', onSelect: () => { setEditing(t); setAdding(false) } },
+                              { label: 'Edit', onSelect: () => { setEditing(t); setAdding(false); setSplitting(null) } },
                               { label: 'Delete', onSelect: () => void remove(t), danger: true },
                             ]
                           : []),

@@ -194,3 +194,11 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 .preset-row button:hover { border-color: #b3beb8; background: #f8faf9; }
 .preset-row button[aria-pressed='true'] { color: #fff; background: #0e6b4f; border-color: #0e6b4f; }
 .preset-row button:focus-visible { outline: 2px solid #0e6b4f; outline-offset: 2px; }
+
+/* ---- Transactions: split panel and split amounts ------------------------------------- */
+.txn-page .amount-of { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--muted); }
+.split-panel .split-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.split-panel .split-head h2 { margin: 0; }
+.split-panel .split-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0.75rem 0; }
+.split-panel .split-row label { display: flex; align-items: center; gap: 0.5rem; }
+.split-panel .split-others { min-width: 12rem; }

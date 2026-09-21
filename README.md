@@ -38,6 +38,7 @@ The database is created at `backend/data/finio.sqlite3` (override with `FINIO_DB
 1. **Accounts**: create an account with source "Apple Card CSV import".
 2. **Import**: export a statement CSV from Wallet (Apple Card, Statements) and drop it in. Overlapping exports are safe: rows already stored are skipped, and importing the exact same file twice is rejected. If an imported row's category is not in your category set, that category is created and kept (for example Apple's payment rows create a "Payment" category). `Other` is used only for rows with no category.
 3. **Transactions**: recategorize inline, use "Make rule" to categorize a merchant automatically from now on, and use "Add transaction" to enter transactions from other sites by hand. Manual transactions require a category that you pick. Rules recategorize matching existing transactions too, but never override a category you set by hand.
+4. **Split a group charge**: open a purchase's ⋯ menu and choose Split… to enter what you actually spent (or split evenly among N people). Only your share counts on the Dashboard; the full charge stays on the transaction.
 
 ## Test
 

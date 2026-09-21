@@ -28,6 +28,9 @@ export type Transaction = {
   category: string
   category_source: 'source_default' | 'rule' | 'manual'
   origin: 'import' | 'manual'
+  my_share: number | null
+  share_source: 'manual' | 'venmo' | null
+  effective_amount: number
 }
 export type TransactionPage = { items: Transaction[]; total: number }
 export type Filters = { date_from?: string; date_to?: string; cardholder?: string; account_id?: string }
@@ -94,7 +97,7 @@ export const api = {
   transactions: (params: Record<string, string | number | undefined>) =>
     request<TransactionPage>(`/transactions${toQueryString(params)}`),
   createTransaction: (body: ManualTransactionInput) => request<Transaction>('/transactions', send('POST', body)),
-  updateTransaction: (id: number, patch: Partial<Omit<ManualTransactionInput, 'account_id'>>) =>
+  updateTransaction: (id: number, patch: Partial<Omit<ManualTransactionInput, 'account_id'>> & { my_share?: number | null }) =>
     request<Transaction>(`/transactions/${id}`, send('PATCH', patch)),
   deleteTransaction: (id: number) => request<void>(`/transactions/${id}`, send('DELETE')),
 
