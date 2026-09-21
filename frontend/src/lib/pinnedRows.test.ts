@@ -18,6 +18,9 @@ function txn(id: number, category = 'Other'): Transaction {
     category,
     category_source: 'source_default',
     origin: 'import',
+    my_share: null,
+    share_source: null,
+    effective_amount: 1000,
   }
 }
 
