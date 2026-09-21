@@ -50,7 +50,8 @@ export default function SplitPanel({ transaction: t, onDone, onCancel }: Props) 
       <div className="split-row">
         <label>
           Split evenly among
-          <input inputMode="numeric" size={4} placeholder="4" value={people} onChange={(e) => setPeople(e.target.value)} />
+          <input inputMode="numeric" size={4} placeholder="4" value={people} onChange={(e) => setPeople(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); fillIn() } }} />
           <span>people</span>
         </label>
         <button type="button" onClick={fillIn}>Fill in</button>
