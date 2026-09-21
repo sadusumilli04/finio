@@ -1,19 +1,21 @@
 import sqlite3
 
 from finio.errors import ForbiddenError, NotFoundError, ValidationFailed
+from finio.services.amounts import EFFECTIVE_AMOUNT
 from finio.services.filters import where_clause
 from finio.services.merchants import clean_merchant, load_aliases, normalize_whitespace
 
-TXN_SELECT = """
+TXN_SELECT = f"""
 SELECT t.id, t.account_id, a.name AS account_name, t.transaction_date, t.posted_date, t.amount,
        t.type, t.merchant_clean AS merchant, t.raw_description AS description, t.cardholder,
-       t.category_id, c.name AS category, t.category_source, t.origin
+       t.category_id, c.name AS category, t.category_source, t.origin,
+       t.my_share, t.share_source, {EFFECTIVE_AMOUNT} AS effective_amount
 FROM transactions t
 JOIN accounts a ON a.id = t.account_id
 JOIN categories c ON c.id = t.category_id
 """
 
-SORT_COLUMNS = {"date": "t.transaction_date", "amount": "t.amount", "merchant": "t.merchant_clean"}
+SORT_COLUMNS = {"date": "t.transaction_date", "amount": EFFECTIVE_AMOUNT, "merchant": "t.merchant_clean"}
 
 
 def get_transaction(conn: sqlite3.Connection, transaction_id: int) -> dict:

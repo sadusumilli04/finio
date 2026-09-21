@@ -1,3 +1,6 @@
+from finio.services.amounts import EFFECTIVE_AMOUNT
+
+
 def where_clause(
     *,
     date_from=None,
@@ -30,9 +33,9 @@ def where_clause(
     if merchant:
         add("lower(t.merchant_clean) LIKE ?", f"%{merchant.lower()}%")
     if min_amount is not None:
-        add("t.amount >= ?", min_amount)
+        add(f"{EFFECTIVE_AMOUNT} >= ?", min_amount)
     if max_amount is not None:
-        add("t.amount <= ?", max_amount)
+        add(f"{EFFECTIVE_AMOUNT} <= ?", max_amount)
     if q:
         like = f"%{q.lower()}%"
         add("(lower(t.merchant_clean) LIKE ? OR lower(t.raw_description) LIKE ?)", like, like)
