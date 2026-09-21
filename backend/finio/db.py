@@ -67,7 +67,9 @@ CREATE TABLE IF NOT EXISTS transactions (
     origin TEXT NOT NULL CHECK (origin IN ('import','manual')),
     fingerprint TEXT,
     occurrence INTEGER,
-    raw_row TEXT
+    raw_row TEXT,
+    my_share INTEGER CHECK (my_share IS NULL OR my_share >= 0),
+    share_source TEXT CHECK (share_source IS NULL OR share_source IN ('manual', 'venmo'))
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_txn_fingerprint
@@ -75,6 +77,24 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_txn_fingerprint
 CREATE INDEX IF NOT EXISTS ix_txn_date ON transactions(transaction_date);
 CREATE INDEX IF NOT EXISTS ix_txn_merchant ON transactions(merchant_clean);
 """
+
+SCHEMA_VERSION = 2
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Bring an existing database up to SCHEMA_VERSION. Checks columns rather than trusting the version stamp."""
+    columns = {r["name"] for r in conn.execute("PRAGMA table_info(transactions)")}
+    if "my_share" not in columns:
+        conn.execute(
+            "ALTER TABLE transactions ADD COLUMN my_share INTEGER CHECK (my_share IS NULL OR my_share >= 0)"
+        )
+    if "share_source" not in columns:
+        conn.execute(
+            "ALTER TABLE transactions ADD COLUMN share_source TEXT "
+            "CHECK (share_source IS NULL OR share_source IN ('manual', 'venmo'))"
+        )
+    if conn.execute("PRAGMA user_version").fetchone()[0] < SCHEMA_VERSION:
+        conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
 
 def connect(path: str | Path) -> sqlite3.Connection:
@@ -90,6 +110,5 @@ def init_db(conn: sqlite3.Connection) -> None:
         conn.executemany(
             "INSERT INTO categories(name) VALUES (?)", [(n,) for n in DEFAULT_CATEGORIES]
         )
-    if conn.execute("PRAGMA user_version").fetchone()[0] == 0:
-        conn.execute("PRAGMA user_version = 1")
+    _migrate(conn)
     conn.commit()

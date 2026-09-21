@@ -13,14 +13,19 @@ def insert_txn(
     category_source="source_default",
     posted=None,
     source_category=None,
+    my_share=None,
+    share_source=None,
 ):
+    if my_share is not None and share_source is None:
+        share_source = "manual"
     cat_id = conn.execute("SELECT id FROM categories WHERE name = ?", (category,)).fetchone()["id"]
     cur = conn.execute(
         "INSERT INTO transactions(account_id, posted_date, transaction_date, amount, type, "
-        "raw_description, merchant_raw, merchant_clean, cardholder, category_id, category_source, origin, source_category) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "raw_description, merchant_raw, merchant_clean, cardholder, category_id, category_source, origin, "
+        "source_category, my_share, share_source) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (account_id, posted, date, amount, type, description or merchant, merchant, merchant,
-         cardholder, cat_id, category_source, origin, source_category),
+         cardholder, cat_id, category_source, origin, source_category, my_share, share_source),
     )
     conn.commit()
     return cur.lastrowid
