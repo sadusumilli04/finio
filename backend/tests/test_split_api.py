@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pytest
+
+from finio.errors import ValidationFailed
 from finio.services.transactions import set_share
 from tests.helpers import insert_txn
 
@@ -95,7 +98,7 @@ def test_manual_amount_edits_respect_the_split(client):
 
 def test_manual_direction_change_clears_the_split(client):
     t = create_manual(client, manual_account(client), amount=5000)
-    patch(client, t["id"], my_share=2000)
+    assert patch(client, t["id"], my_share=2000).json()["my_share"] == 2000
     changed = patch(client, t["id"], direction="income").json()
     assert (changed["type"], changed["my_share"], changed["share_source"]) == ("income", None, None)
     assert changed["effective_amount"] == -5000
@@ -126,3 +129,53 @@ def test_set_share_is_the_hook_for_other_sources(conn, make_account):
     t = set_share(conn, tid, 4000, source="venmo")
     assert (t["my_share"], t["share_source"], t["effective_amount"]) == (4000, "venmo", 4000)
     assert set_share(conn, tid, None)["share_source"] is None
+
+
+def test_set_share_rejects_an_unknown_source(conn, make_account):
+    tid = insert_txn(conn, make_account(), amount=12000)
+    with pytest.raises(ValidationFailed):
+        set_share(conn, tid, 100, source="bogus")
+    assert set_share(conn, tid, 100, source="venmo")["share_source"] == "venmo"
+    assert set_share(conn, tid, 200)["share_source"] == "manual"
+    assert set_share(conn, tid, None, source="bogus")["my_share"] is None
+
+
+def test_income_direction_with_a_share_is_rejected_and_changes_nothing(client):
+    t = create_manual(client, manual_account(client), amount=5000)
+    assert patch(client, t["id"], direction="income", my_share=1000).status_code == 400
+    after = client.get("/api/transactions").json()["items"][0]
+    assert (after["type"], after["my_share"], after["amount"]) == ("purchase", None, 5000)
+
+
+def test_income_direction_with_null_share_clears_the_split(client):
+    t = create_manual(client, manual_account(client), amount=5000)
+    patch(client, t["id"], my_share=2000)
+    r = patch(client, t["id"], direction="income", my_share=None)
+    assert r.status_code == 200, r.text
+    assert (r.json()["type"], r.json()["my_share"], r.json()["share_source"]) == ("income", None, None)
+
+
+def test_amount_can_be_lowered_to_exactly_the_share(client):
+    t = create_manual(client, manual_account(client), amount=5000)
+    patch(client, t["id"], my_share=2000)
+    r = patch(client, t["id"], amount=2000)
+    assert r.status_code == 200, r.text
+    assert (r.json()["amount"], r.json()["my_share"]) == (2000, 2000)
+
+
+def test_rejected_share_leaves_a_sent_category_unchanged(client, conn, make_account):
+    tid = insert_txn(conn, make_account(), amount=12000, category="Restaurants")
+    r = patch(client, tid, my_share=12001, category_id=cat(client, "Grocery"))
+    assert r.status_code == 400
+    assert client.get("/api/transactions").json()["items"][0]["category"] == "Restaurants"
+
+
+def test_imported_row_with_null_share_and_merchant_is_forbidden(client, conn, make_account):
+    tid = insert_txn(conn, make_account(), amount=12000, my_share=3000)
+    assert patch(client, tid, my_share=None, merchant="X").status_code == 403
+    assert client.get("/api/transactions").json()["items"][0]["my_share"] == 3000
+
+
+def test_share_above_the_cap_is_a_422(client, conn, make_account):
+    tid = insert_txn(conn, make_account(), amount=12000)
+    assert patch(client, tid, my_share=10**12 + 1).status_code == 422

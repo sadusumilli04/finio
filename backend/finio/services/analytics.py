@@ -6,7 +6,7 @@ from finio.services.filters import where_clause
 
 def _spending_where(**filters) -> tuple[str, list]:
     where, params = where_clause(**filters)
-    return f"t.type = 'purchase' AND {EFFECTIVE_AMOUNT} > 0 AND {where}", params
+    return f"t.type = 'purchase' AND {EFFECTIVE_AMOUNT} <> 0 AND {where}", params
 
 
 def spending_by_category(conn: sqlite3.Connection, **filters) -> list[dict]:

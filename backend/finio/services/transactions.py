@@ -59,6 +59,8 @@ def _share_columns(row, my_share, source: str = "manual", *, new_type=None, new_
     """Column updates that set or clear the split, validated against the (possibly just-edited) charge."""
     if my_share is None:
         return {"my_share": None, "share_source": None}
+    if source not in {"manual", "venmo"}:
+        raise ValidationFailed("Unknown share source")
     type_ = new_type or row["type"]
     charge = abs(new_amount) if new_amount is not None else row["amount"]
     if type_ != "purchase":

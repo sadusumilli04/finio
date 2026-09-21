@@ -105,6 +105,8 @@ def connect(path: str | Path) -> sqlite3.Connection:
 
 
 def init_db(conn: sqlite3.Connection) -> None:
+    # SCHEMA runs before _migrate. A future migration that adds an index or statement referencing a NEW
+    # column must create it inside _migrate (after the ALTER), not in SCHEMA, or startup would fail on an old database.
     conn.executescript(SCHEMA)
     if conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0] == 0:
         conn.executemany(

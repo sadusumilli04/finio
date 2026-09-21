@@ -49,7 +49,7 @@ def find_recurring(conn: sqlite3.Connection, **filters) -> list[dict]:
     where, params = where_clause(**filters)
     rows = conn.execute(
         f"SELECT t.merchant_clean AS merchant, t.transaction_date AS d, {EFFECTIVE_AMOUNT} AS amount "
-        f"FROM transactions t WHERE t.type = 'purchase' AND {EFFECTIVE_AMOUNT} > 0 "
+        f"FROM transactions t WHERE t.type = 'purchase' AND {EFFECTIVE_AMOUNT} <> 0 "
         f"AND t.merchant_clean != '' AND {where}",
         params,
     )

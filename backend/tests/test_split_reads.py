@@ -39,3 +39,19 @@ def test_amount_filters_use_the_share(client, conn, make_account):
     assert ids(min_amount=4000) == {plain}            # the $120 charge is only $30 to the user
     assert ids(max_amount=3000, min_amount=1) == {split}
     assert ids(min_amount=10000) == set()
+
+
+def test_amount_filters_are_inclusive_at_the_share(client, conn, make_account):
+    split, _, _ = seed(conn, make_account)
+
+    def ids(**params):
+        return {t["id"] for t in client.get("/api/transactions", params=params).json()["items"]}
+
+    assert split in ids(min_amount=3000)
+    assert split in ids(max_amount=3000)
+
+
+def test_sort_by_amount_ascending_uses_the_share(client, conn, make_account):
+    split, plain, payment = seed(conn, make_account)
+    asc = client.get("/api/transactions", params={"sort": "amount", "order": "asc"}).json()["items"]
+    assert [t["id"] for t in asc] == [payment, split, plain]

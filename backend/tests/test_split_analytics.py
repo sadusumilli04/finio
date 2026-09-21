@@ -46,3 +46,12 @@ def test_recurring_ignores_fully_repaid_charges(client, conn, make_account):
     for d in ("2026-07-15", "2026-08-15", "2026-09-14"):
         insert_txn(conn, acct, merchant="Covered Dinner", amount=6000, my_share=0, date=d)
     assert client.get("/api/analytics/recurring").json() == []
+
+
+def test_negative_purchase_typed_adjustment_nets_against_the_purchase(client, conn, make_account):
+    acct = make_account()
+    insert_txn(conn, acct, merchant="Shop", amount=8000, category="Restaurants", date="2026-09-10")
+    insert_txn(conn, acct, merchant="Shop", amount=-8000, type="purchase", category="Restaurants", date="2026-09-12")
+    cats = client.get("/api/analytics/spending-by-category").json()
+    assert [(c["category"], c["total"], c["count"]) for c in cats] == [("Restaurants", 0, 2)]
+    assert client.get("/api/analytics/trends").json() == [{"month": "2026-09", "total": 0}]
