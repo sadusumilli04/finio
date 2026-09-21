@@ -229,3 +229,6 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 @media (max-width: 720px) {
   .insights-page .insight-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 720px) {
+  .nav { flex-wrap: wrap; gap: 0.25rem 1rem; }
+}
