@@ -31,27 +31,27 @@ def test_reads_only_transaction_rows_and_reports_the_cancelled_one():
 
 def test_payment_you_send_is_a_purchase_to_the_payee():
     r = by_id(parse())["1000000000000000001"]
-    assert (r.type, r.amount, r.merchant_raw, r.raw_description) == ("purchase", 2000, "Person One", "groceries")
+    assert (r.type, r.amount, r.merchant_raw, r.raw_description) == ("purchase", 2340, "Person One", "groceries")
     assert (r.transaction_date, r.posted_date, r.cardholder, r.source_category) == ("2026-09-10", None, None, "Friends & Family")
     assert r.flagged is False
 
 
 def test_charge_you_pay_is_a_purchase_to_the_requester():
     r = by_id(parse())["1000000000000000002"]
-    assert (r.type, r.amount, r.merchant_raw) == ("purchase", 900, "Person Two")
+    assert (r.type, r.amount, r.merchant_raw) == ("purchase", 825, "Person Two")
 
 
 def test_money_you_receive_is_money_in():
     rows = by_id(parse())
     payment_in, charge_paid = rows["1000000000000000004"], rows["1000000000000000005"]
-    assert (payment_in.type, payment_in.amount, payment_in.merchant_raw) == ("payment", -4100, "Person One")
-    assert (charge_paid.type, charge_paid.amount, charge_paid.merchant_raw) == ("payment", -5652, "Person Three")
+    assert (payment_in.type, payment_in.amount, payment_in.merchant_raw) == ("payment", -3710, "Person One")
+    assert (charge_paid.type, charge_paid.amount, charge_paid.merchant_raw) == ("payment", -4890, "Person Three")
 
 
 def test_standard_transfer_is_not_spending():
     r = by_id(parse())["1000000000000000003"]
     assert (r.type, r.amount, r.merchant_raw, r.raw_description, r.source_category) == (
-        "transfer", 1900, "Venmo transfer", "Standard Transfer", "Other",
+        "transfer", 3000, "Venmo transfer", "Standard Transfer", "Other",
     )
 
 
@@ -63,7 +63,7 @@ def test_thousands_separators_and_blank_notes():
 
 def test_raw_row_keeps_the_original_row():
     r = by_id(parse())["1000000000000000001"]
-    assert r.raw_row["ID"] == "1000000000000000001" and r.raw_row["Amount (total)"] == "- $20.00"
+    assert r.raw_row["ID"] == "1000000000000000001" and r.raw_row["Amount (total)"] == "- $23.40"
 
 
 def test_unknown_type_is_flagged_and_kept():

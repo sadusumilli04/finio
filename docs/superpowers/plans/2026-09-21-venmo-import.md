@@ -66,11 +66,11 @@ Account Statement - (@test-user) ,,,,,,,,,,,,,,,,,,,,,
 Account Activity,,,,,,,,,,,,,,,,,,,,,
 ,ID,Datetime,Type,Status,Note,From,To,Amount (total),Amount (tip),Amount (tax),Amount (fee),Tax Rate,Tax Exempt,Funding Source,Destination,Beginning Balance,Ending Balance,Statement Period Venmo Fees,Terminal Location,Year to Date Venmo Fees,Disclaimer
 ,,,,,,,,,,,,,,,,$10.00,,,,,
-,1000000000000000001,2026-09-10T00:53:22,Payment,Complete,groceries,Test User,Person One,- $20.00,,0,,0,,"TEST BANK Checking *0000",,,,,Venmo,,
-,1000000000000000002,2026-09-10T04:46:47,Charge,Complete,Lunch,Person Two,Test User,- $9.00,,0,,0,,"TEST BANK Checking *0000",,,,,Venmo,,
-,1000000000000000003,2026-09-13T05:33:46,Standard Transfer,Issued,,,,- $19.00,,,,,,,"TEST BANK *0000",,,,Venmo,,
-,1000000000000000004,2026-09-13T06:06:40,Payment,Complete,Dinner,Person One,Test User,+ $41.00,,0,,0,,,Venmo balance,,,,Venmo,,
-,1000000000000000005,2026-09-13T17:07:44,Charge,Complete,brunch,Test User,Person Three,+ $56.52,,0,,0,,,Venmo balance,,,,Venmo,,
+,1000000000000000001,2026-09-10T09:15:00,Payment,Complete,groceries,Test User,Person One,- $23.40,,0,,0,,"TEST BANK Checking *0000",,,,,Venmo,,
+,1000000000000000002,2026-09-10T11:30:00,Charge,Complete,Lunch,Person Two,Test User,- $8.25,,0,,0,,"TEST BANK Checking *0000",,,,,Venmo,,
+,1000000000000000003,2026-09-13T08:00:00,Standard Transfer,Issued,,,,- $30.00,,,,,,,"TEST BANK *0000",,,,Venmo,,
+,1000000000000000004,2026-09-13T09:45:00,Payment,Complete,Dinner,Person One,Test User,+ $37.10,,0,,0,,,Venmo balance,,,,Venmo,,
+,1000000000000000005,2026-09-13T14:20:00,Charge,Complete,coffee run,Test User,Person Three,+ $48.90,,0,,0,,,Venmo balance,,,,Venmo,,
 ,1000000000000000006,2026-09-14T10:00:00,Payment,Complete,Rent share,Test User,Person Four,"- $1,250.00",,0,,0,,"TEST BANK Checking *0000",,,,,Venmo,,
 ,1000000000000000007,2026-09-15T10:00:00,Payment,Cancelled,Oops,Test User,Person One,- $5.00,,0,,0,,"TEST BANK Checking *0000",,,,,Venmo,,
 ,1000000000000000008,2026-09-16T10:00:00,Payment,Complete,,Test User,Person Two,- $7.50,,0,,0,,"TEST BANK Checking *0000",,,,,Venmo,,
@@ -118,27 +118,27 @@ def test_reads_only_transaction_rows_and_reports_the_cancelled_one():
 
 def test_payment_you_send_is_a_purchase_to_the_payee():
     r = by_id(parse())["1000000000000000001"]
-    assert (r.type, r.amount, r.merchant_raw, r.raw_description) == ("purchase", 2000, "Person One", "groceries")
+    assert (r.type, r.amount, r.merchant_raw, r.raw_description) == ("purchase", 2340, "Person One", "groceries")
     assert (r.transaction_date, r.posted_date, r.cardholder, r.source_category) == ("2026-09-10", None, None, "Friends & Family")
     assert r.flagged is False
 
 
 def test_charge_you_pay_is_a_purchase_to_the_requester():
     r = by_id(parse())["1000000000000000002"]
-    assert (r.type, r.amount, r.merchant_raw) == ("purchase", 900, "Person Two")
+    assert (r.type, r.amount, r.merchant_raw) == ("purchase", 825, "Person Two")
 
 
 def test_money_you_receive_is_money_in():
     rows = by_id(parse())
     payment_in, charge_paid = rows["1000000000000000004"], rows["1000000000000000005"]
-    assert (payment_in.type, payment_in.amount, payment_in.merchant_raw) == ("payment", -4100, "Person One")
-    assert (charge_paid.type, charge_paid.amount, charge_paid.merchant_raw) == ("payment", -5652, "Person Three")
+    assert (payment_in.type, payment_in.amount, payment_in.merchant_raw) == ("payment", -3710, "Person One")
+    assert (charge_paid.type, charge_paid.amount, charge_paid.merchant_raw) == ("payment", -4890, "Person Three")
 
 
 def test_standard_transfer_is_not_spending():
     r = by_id(parse())["1000000000000000003"]
     assert (r.type, r.amount, r.merchant_raw, r.raw_description, r.source_category) == (
-        "transfer", 1900, "Venmo transfer", "Standard Transfer", "Other",
+        "transfer", 3000, "Venmo transfer", "Standard Transfer", "Other",
     )
 
 
@@ -150,7 +150,7 @@ def test_thousands_separators_and_blank_notes():
 
 def test_raw_row_keeps_the_original_row():
     r = by_id(parse())["1000000000000000001"]
-    assert r.raw_row["ID"] == "1000000000000000001" and r.raw_row["Amount (total)"] == "- $20.00"
+    assert r.raw_row["ID"] == "1000000000000000001" and r.raw_row["Amount (total)"] == "- $23.40"
 
 
 def test_unknown_type_is_flagged_and_kept():
@@ -372,7 +372,7 @@ def test_import_creates_the_category_and_counts_only_payments_you_send_as_spendi
     names = [c["name"] for c in client.get("/api/categories").json()]
     assert "Friends & Family" in names
     spending = client.get("/api/analytics/spending-by-category").json()
-    assert {c["category"]: c["total"] for c in spending} == {"Friends & Family": 2000 + 900 + 125000 + 750}
+    assert {c["category"]: c["total"] for c in spending} == {"Friends & Family": 2340 + 825 + 125000 + 750}
 
 
 def test_reimporting_the_same_file_is_rejected_and_an_overlapping_one_adds_only_new_rows(client):
