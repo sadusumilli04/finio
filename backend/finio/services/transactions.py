@@ -52,6 +52,36 @@ def _require_category(conn: sqlite3.Connection, category_id: int) -> None:
         raise ValidationFailed(f"Category {category_id} does not exist")
 
 
+SHARE_FIELDS = {"category_id", "my_share"}
+
+
+def _share_columns(row, my_share, source: str = "manual", *, new_type=None, new_amount=None) -> dict:
+    """Column updates that set or clear the split, validated against the (possibly just-edited) charge."""
+    if my_share is None:
+        return {"my_share": None, "share_source": None}
+    type_ = new_type or row["type"]
+    charge = abs(new_amount) if new_amount is not None else row["amount"]
+    if type_ != "purchase":
+        raise ValidationFailed("Only purchases can be split")
+    if my_share < 0 or my_share > charge:
+        raise ValidationFailed("Your share must be between $0.00 and the charge")
+    return {"my_share": my_share, "share_source": source}
+
+
+def set_share(conn: sqlite3.Connection, transaction_id: int, my_share: int | None, source: str = "manual") -> dict:
+    """Set (or clear, with None) how much of a purchase is the user's. Other sources, such as a Venmo importer, call this too."""
+    row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
+    if row is None:
+        raise NotFoundError(f"Transaction {transaction_id} not found")
+    sets = _share_columns(row, my_share, source)
+    with conn:
+        conn.execute(
+            "UPDATE transactions SET my_share = ?, share_source = ? WHERE id = ?",
+            (sets["my_share"], sets["share_source"], transaction_id),
+        )
+    return get_transaction(conn, transaction_id)
+
+
 def create_manual(conn: sqlite3.Connection, data: dict) -> dict:
     if conn.execute("SELECT 1 FROM accounts WHERE id = ?", (data["account_id"],)).fetchone() is None:
         raise NotFoundError(f"Account {data['account_id']} not found")
@@ -74,8 +104,8 @@ def update_transaction(conn: sqlite3.Connection, transaction_id: int, fields: di
     row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
     if row is None:
         raise NotFoundError(f"Transaction {transaction_id} not found")
-    if row["origin"] == "import" and set(fields) - {"category_id"}:
-        raise ForbiddenError("Imported transactions can only be recategorized")
+    if row["origin"] == "import" and set(fields) - SHARE_FIELDS:
+        raise ForbiddenError("Imported transactions can only be recategorized or split")
     if "category_id" in fields:
         if fields["category_id"] is None:
             raise ValidationFailed("category_id cannot be null")
@@ -106,6 +136,14 @@ def update_transaction(conn: sqlite3.Connection, transaction_id: int, fields: di
             amount = fields.get("amount", abs(row["amount"]))
             sets["amount"] = _signed(direction, amount)
             sets["type"] = DIRECTION_TO_TYPE[direction]
+    if "my_share" in fields:
+        sets.update(_share_columns(row, fields["my_share"], new_type=sets.get("type"), new_amount=sets.get("amount")))
+    elif row["my_share"] is not None and ("amount" in sets or "type" in sets):
+        if sets.get("type", row["type"]) != "purchase":
+            sets["my_share"] = None
+            sets["share_source"] = None
+        elif sets.get("amount", row["amount"]) < row["my_share"]:
+            raise ValidationFailed("The split exceeds the new charge; edit the split first")
     if sets:
         assignments = ", ".join(f"{col} = ?" for col in sets)
         with conn:
