@@ -10,7 +10,7 @@ import { categoryColor } from '../lib/categoryColor'
 import { shortDate } from '../lib/date'
 import { buildChips, type Chip } from '../lib/filterChips'
 import { formatCents } from '../lib/money'
-import { mergePinned } from '../lib/pinnedRows'
+import { mergePinned, replacePinned } from '../lib/pinnedRows'
 import { useFetch } from '../lib/useFetch'
 
 const PAGE_SIZE = 50
@@ -129,7 +129,8 @@ export default function Transactions() {
     setActionError(null)
     setNotice(null)
     try {
-      await api.updateTransaction(t.id, { my_share: null })
+      const updated = await api.updateTransaction(t.id, { my_share: null })
+      setPinned((prev) => replacePinned(prev, updated))
       txns.reload()
     } catch (err) {
       setActionError(messageOf(err))
@@ -243,7 +244,7 @@ export default function Transactions() {
           key={splitting.id}
           transaction={splitting}
           onCancel={() => setSplitting(null)}
-          onDone={() => { setSplitting(null); txns.reload() }}
+          onDone={(updated) => { setSplitting(null); setPinned((prev) => replacePinned(prev, updated)); txns.reload() }}
         />
       )}
 

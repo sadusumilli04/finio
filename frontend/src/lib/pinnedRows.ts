@@ -14,3 +14,8 @@ export function mergePinned(items: Transaction[], pinned: Transaction[]) {
     hiddenCount: missing.length,
   }
 }
+
+/** Swap in a fresh copy of an already-pinned row; a row that is not pinned is not added. */
+export function replacePinned(pinned: Transaction[], updated: Transaction): Transaction[] {
+  return pinned.map((p) => (p.id === updated.id ? updated : p))
+}

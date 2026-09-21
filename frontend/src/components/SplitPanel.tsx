@@ -3,7 +3,7 @@ import { api, type Transaction } from '../api'
 import { formatCents } from '../lib/money'
 import { evenShare, parseShareToCents, validateSplit } from '../lib/split'
 
-type Props = { transaction: Transaction; onDone: () => void; onCancel: () => void }
+type Props = { transaction: Transaction; onDone: (updated: Transaction) => void; onCancel: () => void }
 
 export default function SplitPanel({ transaction: t, onDone, onCancel }: Props) {
   const [people, setPeople] = useState('')
@@ -32,8 +32,8 @@ export default function SplitPanel({ transaction: t, onDone, onCancel }: Props) 
   async function send(myShare: number | null) {
     setBusy(true)
     try {
-      await api.updateTransaction(t.id, { my_share: myShare })
-      onDone()
+      const updated = await api.updateTransaction(t.id, { my_share: myShare })
+      onDone(updated)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
