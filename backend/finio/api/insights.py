@@ -12,7 +12,8 @@ router = APIRouter()
 @router.get("/insights")
 def get_insights(
     month: str | None = None,
+    cardholder: str | None = None,
     today: date = Depends(get_today),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
-    return build_insights(conn, month, today)
+    return build_insights(conn, month, today, cardholder)

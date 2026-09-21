@@ -86,3 +86,14 @@ def test_a_new_item_without_a_charge_in_the_window_has_no_current(conn, make_acc
     early = build_windows("2026-09", date(2026, 9, 2))
     new = [i for i in build_subscriptions(conn, early) if i["kind"] == "new"]
     assert new == [{"merchant": "Hulu", "kind": "new", "current": None, "previous": None, "expected_date": None}]
+
+
+def test_subscriptions_are_per_cardholder(conn, make_account):
+    acct = make_account()
+    for d, a in zip(monthly(10, range(3, 9)), [1000] * 5 + [1200]):
+        insert_txn(conn, acct, date=d, amount=a, merchant="Spotify", category="Entertainment", cardholder="Ann")
+    for d in monthly(12, range(3, 9)):
+        insert_txn(conn, acct, date=d, amount=1000, merchant="Netflix", category="Entertainment", cardholder="Ben")
+    assert kinds(build_subscriptions(conn, AUG, cardholder="Ann")) == [("price_up", "Spotify")]
+    assert build_subscriptions(conn, AUG, cardholder="Ben") == []
+    assert kinds(build_subscriptions(conn, AUG)) == [("price_up", "Spotify")]

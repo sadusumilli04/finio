@@ -96,3 +96,21 @@ def test_new_merchants_limit_and_ordering(conn, make_account):
         insert_txn(conn, acct, date="2026-09-03", amount=1000 + i, merchant=f"M{i:02d}")
     found = build_new_merchants(conn, build_windows("2026-09", date(2026, 9, 20)))
     assert len(found) == 10 and found[0]["merchant"] == "M11"
+
+
+def test_changes_can_be_limited_to_one_cardholder(conn, make_account):
+    acct = make_account()
+    insert_txn(conn, acct, date="2026-08-10", amount=1000, merchant="Alpha", cardholder="Ann", category="Grocery")
+    insert_txn(conn, acct, date="2026-09-02", amount=5000, merchant="Alpha", cardholder="Ann", category="Grocery")
+    insert_txn(conn, acct, date="2026-09-03", amount=3000, merchant="Bravo", cardholder="Ben", category="Other")
+    insert_txn(conn, acct, date="2026-08-11", amount=2000, merchant="Charlie", cardholder="Ben", category="Other")
+    w = build_windows("2026-09", date(2026, 9, 20))
+    start, end = w.current_start, w.current_end
+    assert {v["category"]: v["total"] for v in category_totals(conn, start, end, cardholder="Ann").values()} == {"Grocery": 5000}
+    assert merchant_totals(conn, start, end, cardholder="Ben") == {"Bravo": {"total": 3000, "count": 1}}
+    assert [m["merchant"] for m in build_new_merchants(conn, w, cardholder="Ben")] == ["Bravo"]
+    assert build_new_merchants(conn, w, cardholder="Ann") == []
+    # Alpha is old for Ann but new for Ben, who never went there before
+    insert_txn(conn, acct, date="2026-09-04", amount=700, merchant="Alpha", cardholder="Ben")
+    assert [m["merchant"] for m in build_new_merchants(conn, w, cardholder="Ben")] == ["Bravo", "Alpha"]
+    assert build_new_merchants(conn, w) == [{"merchant": "Bravo", "total": 3000, "count": 1}]

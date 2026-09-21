@@ -94,3 +94,57 @@ def test_a_valid_month_without_spending_is_empty(client, conn, make_account):
     assert d["month"] == "2026-07" and d["summary"]["total"] == 0
     assert d["movers"] == {"up": [], "down": []}
     assert d["new_merchants"] == [] and d["growing_merchants"] == [] and d["unusual_charges"] == [] and d["subscriptions"] == []
+
+
+def seed_two_people(conn, make_account):
+    acct = make_account()
+    insert_txn(conn, acct, date="2026-07-05", amount=8000, merchant="Alpha", cardholder="Ann", category="Grocery")
+    insert_txn(conn, acct, date="2026-08-05", amount=10000, merchant="Alpha", cardholder="Ann", category="Grocery")
+    insert_txn(conn, acct, date="2026-08-06", amount=2000, merchant="Bravo", cardholder="Ben", category="Restaurants")
+    insert_txn(conn, acct, date="2026-09-03", amount=30000, merchant="Alpha", cardholder="Ann", category="Grocery")
+    insert_txn(conn, acct, date="2026-09-04", amount=5000, merchant="Bravo", cardholder="Ben", category="Restaurants")
+    insert_txn(conn, acct, date="2026-09-05", amount=3000, merchant="Cafe", cardholder="Ben", category="Restaurants")
+
+
+def test_cardholder_filters_every_insight(client, conn, make_account):
+    seed_two_people(conn, make_account)
+    pin_today(client, date(2026, 9, 20))
+    everyone = client.get("/api/insights").json()
+    ann = client.get("/api/insights", params={"cardholder": "Ann"}).json()
+    ben = client.get("/api/insights", params={"cardholder": "Ben"}).json()
+    assert set(ann) == TOP_LEVEL
+    assert everyone["summary"]["total"] == 38000
+    assert (ann["summary"]["total"], ann["summary"]["previous_total"]) == (30000, 10000)
+    assert (ben["summary"]["total"], ben["summary"]["previous_total"]) == (8000, 2000)
+    assert ann["available_months"] == ["2026-07", "2026-08", "2026-09"]
+    assert [m["category"] for m in ann["movers"]["up"]] == ["Grocery"]
+    assert [m["category"] for m in ben["movers"]["up"]] == ["Restaurants"]
+    assert [m["merchant"] for m in ben["new_merchants"]] == ["Cafe"]
+    assert ann["new_merchants"] == []
+
+
+def test_empty_cardholder_means_everyone(client, conn, make_account):
+    seed_two_people(conn, make_account)
+    pin_today(client, date(2026, 9, 20))
+    assert client.get("/api/insights", params={"cardholder": ""}).json() == client.get("/api/insights").json()
+
+
+def test_default_month_uses_the_cardholders_months(client, conn, make_account):
+    acct = make_account()
+    insert_txn(conn, acct, date="2026-08-05", amount=10000, cardholder="Ann")
+    insert_txn(conn, acct, date="2026-09-05", amount=20000, cardholder="Ben")
+    pin_today(client, date(2026, 9, 20))
+    assert client.get("/api/insights", params={"cardholder": "Ben"}).json()["month"] == "2026-09"
+    ann = client.get("/api/insights", params={"cardholder": "Ann"}).json()
+    assert (ann["month"], ann["in_progress"], ann["available_months"]) == ("2026-08", False, ["2026-08"])
+
+
+def test_unknown_cardholder_is_an_empty_result(client, conn, make_account):
+    seed_two_people(conn, make_account)
+    pin_today(client, date(2026, 9, 20))
+    r = client.get("/api/insights", params={"cardholder": "Nobody"})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert (d["month"], d["available_months"], d["summary"]["total"]) == ("2026-09", [], 0)
+    assert d["movers"] == {"up": [], "down": []}
+    assert d["new_merchants"] == [] and d["growing_merchants"] == [] and d["unusual_charges"] == [] and d["subscriptions"] == []

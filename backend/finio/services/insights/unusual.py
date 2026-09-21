@@ -14,8 +14,8 @@ from finio.services.insights.constants import (
 from finio.services.insights.windows import Windows
 
 
-def _category_history(conn: sqlite3.Connection, before: date) -> dict[int, list[int]]:
-    where, params = spending_where(date_to=before - timedelta(days=1))
+def _category_history(conn: sqlite3.Connection, before: date, cardholder: str | None) -> dict[int, list[int]]:
+    where, params = spending_where(date_to=before - timedelta(days=1), cardholder=cardholder)
     history: dict[int, list[int]] = defaultdict(list)
     rows = conn.execute(
         f"SELECT t.category_id AS category_id, {EFFECTIVE_AMOUNT} AS amount "
@@ -27,9 +27,9 @@ def _category_history(conn: sqlite3.Connection, before: date) -> dict[int, list[
     return history
 
 
-def build_unusual(conn: sqlite3.Connection, windows: Windows) -> list[dict]:
-    history = _category_history(conn, windows.month_start)
-    where, params = spending_where(date_from=windows.current_start, date_to=windows.current_end)
+def build_unusual(conn: sqlite3.Connection, windows: Windows, *, cardholder: str | None = None) -> list[dict]:
+    history = _category_history(conn, windows.month_start, cardholder)
+    where, params = spending_where(date_from=windows.current_start, date_to=windows.current_end, cardholder=cardholder)
     rows = conn.execute(
         f"SELECT t.id AS transaction_id, t.transaction_date AS date, COALESCE(NULLIF(t.merchant_clean, ''), t.raw_description) AS merchant, "
         f"t.category_id AS category_id, c.name AS category, {EFFECTIVE_AMOUNT} AS amount "

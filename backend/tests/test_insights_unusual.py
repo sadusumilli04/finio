@@ -89,3 +89,14 @@ def test_a_blank_merchant_falls_back_to_the_raw_description(conn, make_account):
     seed_history(conn, acct)
     big = insert_txn(conn, acct, date="2026-09-12", amount=15000, category="Shopping", merchant="", description="RAW STORE 42")
     assert [(u["transaction_id"], u["merchant"]) for u in build_unusual(conn, SEP)] == [(big, "RAW STORE 42")]
+
+
+def test_history_is_only_the_chosen_cardholders(conn, make_account):
+    acct = make_account()
+    for i in range(5):
+        insert_txn(conn, acct, date="2026-08-10", amount=5000, category="Shopping", merchant=f"Hist{i}", cardholder="Ann")
+    ann = insert_txn(conn, acct, date="2026-09-12", amount=15000, category="Shopping", merchant="Best Buy", cardholder="Ann")
+    insert_txn(conn, acct, date="2026-09-13", amount=15000, category="Shopping", merchant="Ben Buy", cardholder="Ben")
+    assert [i["transaction_id"] for i in build_unusual(conn, SEP, cardholder="Ann")] == [ann]
+    assert build_unusual(conn, SEP, cardholder="Ben") == []       # Ben has no history of his own
+    assert len(build_unusual(conn, SEP)) == 2

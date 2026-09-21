@@ -15,8 +15,8 @@ from finio.services.insights.unusual import build_unusual
 from finio.services.insights.windows import build_windows, month_key
 
 
-def build_insights(conn: sqlite3.Connection, month: str | None, today: date) -> dict:
-    totals = monthly_totals(conn)
+def build_insights(conn: sqlite3.Connection, month: str | None, today: date, cardholder: str | None = None) -> dict:
+    totals = monthly_totals(conn, cardholder=cardholder)
     current_key = month_key(today)
     available = [m for m in totals if m <= current_key]
     if month is None:
@@ -32,18 +32,18 @@ def build_insights(conn: sqlite3.Connection, month: str | None, today: date) -> 
         "available_months": available,
         "summary": build_summary(
             w, totals,
-            window_total(conn, w.current_start, w.current_end),
-            window_total(conn, w.previous_start, w.previous_end),
+            window_total(conn, w.current_start, w.current_end, cardholder=cardholder),
+            window_total(conn, w.previous_start, w.previous_end, cardholder=cardholder),
         ),
         "movers": build_movers(
-            category_totals(conn, w.current_start, w.current_end),
-            category_totals(conn, w.previous_start, w.previous_end),
+            category_totals(conn, w.current_start, w.current_end, cardholder=cardholder),
+            category_totals(conn, w.previous_start, w.previous_end, cardholder=cardholder),
         ),
-        "new_merchants": build_new_merchants(conn, w),
+        "new_merchants": build_new_merchants(conn, w, cardholder=cardholder),
         "growing_merchants": build_growing(
-            merchant_totals(conn, w.current_start, w.current_end),
-            merchant_totals(conn, w.previous_start, w.previous_end),
+            merchant_totals(conn, w.current_start, w.current_end, cardholder=cardholder),
+            merchant_totals(conn, w.previous_start, w.previous_end, cardholder=cardholder),
         ),
-        "unusual_charges": build_unusual(conn, w),
-        "subscriptions": build_subscriptions(conn, w),
+        "unusual_charges": build_unusual(conn, w, cardholder=cardholder),
+        "subscriptions": build_subscriptions(conn, w, cardholder=cardholder),
     }

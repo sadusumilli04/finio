@@ -14,8 +14,8 @@ from finio.services.insights.constants import (
 from finio.services.insights.windows import Windows
 
 
-def category_totals(conn: sqlite3.Connection, start: date, end: date) -> dict[int, dict]:
-    where, params = spending_where(date_from=start, date_to=end)
+def category_totals(conn: sqlite3.Connection, start: date, end: date, *, cardholder: str | None = None) -> dict[int, dict]:
+    where, params = spending_where(date_from=start, date_to=end, cardholder=cardholder)
     rows = conn.execute(
         f"SELECT c.id AS category_id, c.name AS category, SUM({EFFECTIVE_AMOUNT}) AS total "
         f"FROM transactions t JOIN categories c ON c.id = t.category_id WHERE {where} GROUP BY c.id",
@@ -24,8 +24,8 @@ def category_totals(conn: sqlite3.Connection, start: date, end: date) -> dict[in
     return {r["category_id"]: {"category": r["category"], "total": r["total"]} for r in rows}
 
 
-def merchant_totals(conn: sqlite3.Connection, start: date, end: date) -> dict[str, dict]:
-    where, params = spending_where(date_from=start, date_to=end)
+def merchant_totals(conn: sqlite3.Connection, start: date, end: date, *, cardholder: str | None = None) -> dict[str, dict]:
+    where, params = spending_where(date_from=start, date_to=end, cardholder=cardholder)
     rows = conn.execute(
         f"SELECT t.merchant_clean AS merchant, SUM({EFFECTIVE_AMOUNT}) AS total, COUNT(*) AS count "
         f"FROM transactions t WHERE {where} AND t.merchant_clean != '' GROUP BY t.merchant_clean",
@@ -73,15 +73,15 @@ def build_growing(current: dict[str, dict], previous: dict[str, dict]) -> list[d
     return items[:GROWING_LIMIT]
 
 
-def build_new_merchants(conn: sqlite3.Connection, windows: Windows) -> list[dict]:
-    where, params = spending_where(date_to=windows.month_start - timedelta(days=1))
+def build_new_merchants(conn: sqlite3.Connection, windows: Windows, *, cardholder: str | None = None) -> list[dict]:
+    where, params = spending_where(date_to=windows.month_start - timedelta(days=1), cardholder=cardholder)
     if conn.execute(f"SELECT 1 FROM transactions t WHERE {where} LIMIT 1", params).fetchone() is None:
         return []   # no earlier data at all: everything would look new
     earlier = {
         r["merchant"]
         for r in conn.execute(f"SELECT DISTINCT t.merchant_clean AS merchant FROM transactions t WHERE {where}", params)
     }
-    current = merchant_totals(conn, windows.current_start, windows.current_end)
+    current = merchant_totals(conn, windows.current_start, windows.current_end, cardholder=cardholder)
     items = [
         {"merchant": merchant, "total": data["total"], "count": data["count"]}
         for merchant, data in current.items()

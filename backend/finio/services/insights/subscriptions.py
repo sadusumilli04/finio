@@ -24,8 +24,8 @@ def _item(merchant: str, kind: str, current: int | None, previous: int | None, e
     }
 
 
-def _charges(conn: sqlite3.Connection, merchants: set[str]) -> dict[str, list[tuple[date, int]]]:
-    where, params = spending_where()
+def _charges(conn: sqlite3.Connection, merchants: set[str], cardholder: str | None) -> dict[str, list[tuple[date, int]]]:
+    where, params = spending_where(cardholder=cardholder)
     rows = conn.execute(
         f"SELECT t.merchant_clean AS merchant, t.transaction_date AS d, {EFFECTIVE_AMOUNT} AS amount "
         f"FROM transactions t WHERE {where} AND {EFFECTIVE_AMOUNT} > 0 ORDER BY t.transaction_date, t.id",
@@ -38,8 +38,8 @@ def _charges(conn: sqlite3.Connection, merchants: set[str]) -> dict[str, list[tu
     return grouped
 
 
-def build_subscriptions(conn: sqlite3.Connection, windows: Windows) -> list[dict]:
-    monthly = {hit["merchant"] for hit in find_recurring(conn) if hit["cadence"] == "monthly"}
+def build_subscriptions(conn: sqlite3.Connection, windows: Windows, *, cardholder: str | None = None) -> list[dict]:
+    monthly = {hit["merchant"] for hit in find_recurring(conn, cardholder=cardholder) if hit["cadence"] == "monthly"}
     if not monthly:
         return []
     new_year, new_month = shift_month(windows.month_start.year, windows.month_start.month, -(SUBSCRIPTION_NEW_MONTHS - 1))
@@ -47,7 +47,7 @@ def build_subscriptions(conn: sqlite3.Connection, windows: Windows) -> list[dict
     deadline = windows.current_end - timedelta(days=SUBSCRIPTION_MISSING_GRACE_DAYS)
 
     items = []
-    for merchant, charges in _charges(conn, monthly).items():
+    for merchant, charges in _charges(conn, monthly, cardholder).items():
         in_window = [i for i, (when, _) in enumerate(charges) if windows.current_start <= when <= windows.current_end]
         before = [charge for charge in charges if charge[0] < windows.month_start]
 

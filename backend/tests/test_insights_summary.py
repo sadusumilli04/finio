@@ -84,3 +84,15 @@ def test_window_total_and_monthly_totals(conn, make_account):
     assert window_total(conn, date(2026, 9, 1), date(2026, 9, 20)) == 4500       # 1000 + 2000 + 1500
     assert window_total(conn, date(2026, 7, 1), date(2026, 7, 31)) == 0
     assert monthly_totals(conn) == {"2026-08": 700, "2026-09": 8500}             # 1000 + 2000 + 4000 + 1500
+
+
+def test_totals_can_be_limited_to_one_cardholder(conn, make_account):
+    acct = make_account()
+    insert_txn(conn, acct, date="2026-09-05", amount=1000, cardholder="Ann")
+    insert_txn(conn, acct, date="2026-09-06", amount=2000, cardholder="Ben")
+    insert_txn(conn, acct, date="2026-08-06", amount=4000, cardholder="Ben")
+    assert window_total(conn, date(2026, 9, 1), date(2026, 9, 30), cardholder="Ann") == 1000
+    assert window_total(conn, date(2026, 9, 1), date(2026, 9, 30)) == 3000
+    assert monthly_totals(conn, cardholder="Ann") == {"2026-09": 1000}
+    assert monthly_totals(conn, cardholder="Ben") == {"2026-08": 4000, "2026-09": 2000}
+    assert monthly_totals(conn, cardholder="Nobody") == {}
