@@ -69,7 +69,7 @@ All thresholds ($10, $25, 1.5x, 3x, $50, 5 earlier purchases, 5%, $1, 3 months, 
 - Default month when omitted: the current month if it has spending, else the latest available month; with no data at all, the current month with an empty result.
 - A malformed month, or a month after the current one, returns 400 (`ValidationFailed`). A valid month with no spending returns an empty result, not an error.
 - A `null` field means "not enough history yet"; lists are empty when nothing qualifies.
-- The router stays thin; the logic lives in `backend/finio/services/insights.py` (one function per insight, each taking the date windows it needs), using `EFFECTIVE_AMOUNT` and `find_recurring`.
+- The router stays thin; the logic lives in the package `backend/finio/services/insights/` (one small module per group of insights, each taking the date windows it needs, assembled by `build_insights`), using `EFFECTIVE_AMOUNT` and `find_recurring`.
 
 ## UI
 
