@@ -41,11 +41,11 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 
 ## Analysis (v1 features)
 
-- **R22.** Spending by category over time: category totals, monthly trends, and top merchants.
+- **R22.** Spending by category over time: category totals, monthly trends, and top merchants (at my share, R32).
 - **R23.** Search and filter transactions by date, merchant, category, amount, account, and cardholder, with sorting and paging, plus inline recategorizing.
-- **R24.** Recurring charges and subscriptions: detected automatically from repeating merchants (weekly, biweekly, monthly, yearly) with the typical amount and next expected date.
+- **R24.** Recurring charges and subscriptions: detected automatically from repeating merchants (weekly, biweekly, monthly, yearly) with the typical amount and next expected date (amounts at my share, R32).
 - **R25.** Accounts and balances: the account model stores balances (a starting balance and date), so a net-worth view can be added once there is more than one account.
-- **R26.** "Spending" counts purchases only; payments, refunds, and income are excluded.
+- **R26.** "Spending" counts purchases only, at my share when a purchase is split (R32). A purchase whose share is $0 is left out of spending totals, charts, top merchants, and recurring detection, but stays in the transaction list. Payments, refunds, and income are excluded.
 - **R27.** The card is shared by more than one person, so cardholder (`Purchased By`) can be filtered on every screen.
 
 ## Splitting a charge
