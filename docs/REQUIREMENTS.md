@@ -36,7 +36,7 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R17.** For accounts with no importer, I can add a transaction with an account, date, amount, direction (expense, income, or refund), merchant, and a category I pick. Description and cardholder are optional.
 - **R18.** The form validates inline: the amount must be greater than zero, the date and merchant are required, and the category must be chosen.
 - **R19.** The form remembers my last account and date and autocompletes merchants from ones I've used.
-- **R20.** Manual transactions can be edited and deleted. Imported transactions can only be recategorized.
+- **R20.** Manual transactions can be edited and deleted. Imported transactions can only be recategorized (and split, see R32).
 - **R21.** Manual transactions count in all analytics, filters, and recurring detection.
 
 ## Analysis (v1 features)
@@ -47,6 +47,14 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R25.** Accounts and balances: the account model stores balances (a starting balance and date), so a net-worth view can be added once there is more than one account.
 - **R26.** "Spending" counts purchases only; payments, refunds, and income are excluded.
 - **R27.** The card is shared by more than one person, so cardholder (`Purchased By`) can be filtered on every screen.
+
+## Splitting a charge
+
+- **R32.** A transaction can be split so that only my share counts as spending, for example when I put a group dinner on my card and am paid back.
+- **R33.** Transactions start unsplit; I opt in per transaction, and importing never sets a split.
+- **R34.** I enter the split as an exact amount, with a shortcut that splits evenly among N people and fills the amount in.
+- **R35.** The original charge stays intact and visible, so the app keeps matching the card statement.
+- **R36.** The design leaves a place for a later Venmo integration to set the share.
 
 ## Screens
 
@@ -60,4 +68,4 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 
 ## Out of scope for v1
 
-Budgets, a net-worth view, PDF import, Plaid or other aggregator sync, auth and hosting, a native Apple app, and screens for managing categories and merchant aliases (these are available through the API).
+Budgets, a net-worth view, Venmo integration, per-person split amounts, tracking money owed, PDF import, Plaid or other aggregator sync, auth and hosting, a native Apple app, and screens for managing categories and merchant aliases (these are available through the API).
