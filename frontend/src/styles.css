@@ -202,3 +202,7 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 .split-panel .split-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0.75rem 0; }
 .split-panel .split-row label { display: flex; align-items: center; gap: 0.5rem; }
 .split-panel .split-others { min-width: 12rem; }
+
+/* ---- Dashboard: top merchants controls ------------------------------------------------- */
+.panel-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.panel-controls select { padding: 0.3rem 0.5rem; border: 1px solid #d5dcd8; border-radius: 8px; background: #fff; }

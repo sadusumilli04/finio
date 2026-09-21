@@ -55,6 +55,8 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R34.** I enter the split as an exact amount, with a shortcut that splits evenly among N people and fills the amount in.
 - **R35.** The original charge stays intact and visible, so the app keeps matching the card statement.
 - **R36.** The design leaves a place for a later Venmo integration to set the share.
+- **R37.** Top merchants on the Dashboard: I can choose how many to show (5, 10, 25 or 50) and rank them by most spent or by most visits.
+- **R38.** The Dashboard can be filtered by category, in addition to date range, cardholder and account.
 
 ## Screens
 

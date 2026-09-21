@@ -7,9 +7,29 @@ type Props = {
   onChange: (f: Filters) => void
   /** Show one-click date ranges (This month, Last month, ...) above the fields. */
   presets?: boolean
+  /** Add a Category dropdown. */
+  categories?: boolean
 }
 
-export default function FilterBar({ filters, onChange, presets = false }: Props) {
+// Its own component so the category list is only fetched by pages that show the dropdown.
+function CategoryFilter({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const categories = useFetch(api.categories, [])
+  return (
+    <label>
+      Category
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">All</option>
+        {categories.data?.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+export default function FilterBar({ filters, onChange, presets = false, categories = false }: Props) {
   const cardholders = useFetch(api.cardholders, [])
   const accounts = useFetch(api.accounts, [])
   const set = (key: keyof Filters, value: string) => onChange({ ...filters, [key]: value || undefined })
@@ -62,6 +82,7 @@ export default function FilterBar({ filters, onChange, presets = false }: Props)
             ))}
           </select>
         </label>
+        {categories && <CategoryFilter value={filters.category_id ?? ''} onChange={(v) => set('category_id', v)} />}
         <button type="button" onClick={() => onChange({})}>
           Clear
         </button>

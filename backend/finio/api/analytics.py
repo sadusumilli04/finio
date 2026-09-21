@@ -1,5 +1,6 @@
 import datetime as dt
 import sqlite3
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
 
@@ -36,10 +37,11 @@ def trends(filters: dict = Depends(common_filters), conn: sqlite3.Connection = D
 @router.get("/top-merchants")
 def top_merchants(
     limit: int = Query(10, ge=1, le=100),
+    sort: Literal["spent", "visits"] = "spent",
     filters: dict = Depends(common_filters),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
-    return svc.top_merchants(conn, limit=limit, **filters)
+    return svc.top_merchants(conn, limit=limit, sort=sort, **filters)
 
 
 @router.get("/recurring")

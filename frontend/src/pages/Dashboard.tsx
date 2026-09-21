@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { api, type Filters } from '../api'
+import { api, type Filters, type MerchantSort } from '../api'
 import FilterBar from '../components/FilterBar'
 import { categoryColor } from '../lib/categoryColor'
 import { withShares } from '../lib/categoryShares'
@@ -16,6 +16,12 @@ const VIEWS: { value: CategoryView; label: string }[] = [
 ]
 const VIEW_KEY = 'finio.categoryView'
 
+const MERCHANT_COUNTS = [5, 10, 25, 50]
+const MERCHANT_SORTS: { value: MerchantSort; label: string }[] = [
+  { value: 'spent', label: 'Most spent' },
+  { value: 'visits', label: 'Most visits' },
+]
+
 function rememberedView(): CategoryView {
   try {
     const saved = localStorage.getItem(VIEW_KEY)
@@ -28,6 +34,8 @@ function rememberedView(): CategoryView {
 export default function Dashboard() {
   const [filters, setFilters] = useState<Filters>({})
   const [view, setView] = useState<CategoryView>(rememberedView)
+  const [merchantCount, setMerchantCount] = useState(10)
+  const [merchantSort, setMerchantSort] = useState<MerchantSort>('spent')
 
   function chooseView(next: CategoryView) {
     setView(next)
@@ -39,7 +47,10 @@ export default function Dashboard() {
   }
   const byCategory = useFetch(() => api.spendingByCategory(filters), [filters])
   const trends = useFetch(() => api.trends(filters), [filters])
-  const merchants = useFetch(() => api.topMerchants(filters), [filters])
+  const merchants = useFetch(
+    () => api.topMerchants(filters, { limit: merchantCount, sort: merchantSort }),
+    [filters, merchantCount, merchantSort],
+  )
 
   const grandTotal = byCategory.data?.reduce((sum, c) => sum + c.total, 0) ?? 0
   const shares = withShares(byCategory.data ?? [])
@@ -52,7 +63,7 @@ export default function Dashboard() {
   return (
     <section>
       <h1>Dashboard</h1>
-      <FilterBar filters={filters} onChange={setFilters} presets />
+      <FilterBar filters={filters} onChange={setFilters} presets categories />
       {errors.length > 0 ? (
         <p className="error">{errors.join(' · ')}</p>
       ) : notLoaded ? (
@@ -141,7 +152,29 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="panel">
-            <h2>Top merchants</h2>
+            <div className="panel-head">
+              <h2>Top merchants</h2>
+              <div className="panel-controls">
+                <select
+                  aria-label="Number of merchants to show"
+                  value={merchantCount}
+                  onChange={(e) => setMerchantCount(Number(e.target.value))}
+                >
+                  {MERCHANT_COUNTS.map((n) => (
+                    <option key={n} value={n}>
+                      Top {n}
+                    </option>
+                  ))}
+                </select>
+                <div className="segmented" role="group" aria-label="Rank merchants by">
+                  {MERCHANT_SORTS.map((o) => (
+                    <button key={o.value} type="button" aria-pressed={merchantSort === o.value} onClick={() => setMerchantSort(o.value)}>
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
             <table>
               <thead>
                 <tr>

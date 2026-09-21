@@ -71,11 +71,12 @@ For accounts that have no importer (other banks, cards, websites), the user adds
 - `GET/POST/PATCH/DELETE /categories` and `/rules`; `GET /rules/{id}`; `POST /rules/reapply` (re-derives every non-manual row: rule match, else the source category)
 - Every transaction object carries `my_share`, `share_source` and `effective_amount` (cents). `sort=amount`, `min_amount` and `max_amount` on `GET /transactions` use the effective amount.
 - `GET /analytics/spending-by-category`, `/trends`, `/top-merchants`, `/recurring`. "Spending" excludes payments and refunds by default, and counts the user's share (the effective amount) of each purchase; purchases whose share is 0 are left out of spending, trends, top merchants and recurring, but stay in the transaction list. Recurring uses an interval and variance heuristic on `merchant_clean`.
+- `GET /analytics/top-merchants` also takes `limit` (1-100, default 10) and `sort`: `spent` (default, most spent first, ties by name) or `visits` (most transactions first, ties by total spent, then name); any other value is rejected. Every analytics endpoint accepts the filters `date_from`, `date_to`, `account_id`, `cardholder` and `category_id`.
 
 ## UI (React + TypeScript, Vite)
 
 Screens:
-- **Dashboard**: category breakdown, monthly trend, top merchants.
+- **Dashboard**: category breakdown, monthly trend, top merchants. Filters (date range with one-click presets, cardholder, account, category) apply to every section. Top merchants lets the user choose how many to show (5, 10, 25 or 50) and rank them by most spent or most visits.
 - **Transactions**: search, filters, inline recategorize, "create rule from this", an **Add transaction** button that opens the manual entry form, and a **Split panel**. A purchase's ⋯ menu offers **Split…** (or **Edit split…** and **Remove split** once split); the panel shows the charge, an "even split among N people" shortcut with **Fill in**, an exact **My share** amount (0 is allowed), and the live "Paid for others" figure. A split row shows the user's share in bold with the full charge beneath it ("of $120.00"); the amount column, sort and amount filters use the effective amount. The Dashboard has no new controls; its numbers reflect the share.
 - **Recurring**: detected recurring charges.
 - **Import**: drag and drop, with a results summary.

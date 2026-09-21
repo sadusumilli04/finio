@@ -33,7 +33,14 @@ export type Transaction = {
   effective_amount: number
 }
 export type TransactionPage = { items: Transaction[]; total: number }
-export type Filters = { date_from?: string; date_to?: string; cardholder?: string; account_id?: string }
+export type Filters = {
+  date_from?: string
+  date_to?: string
+  cardholder?: string
+  account_id?: string
+  category_id?: string
+}
+export type MerchantSort = 'spent' | 'visits'
 export type ManualTransactionInput = {
   account_id: number
   date: string
@@ -118,6 +125,7 @@ export const api = {
 
   spendingByCategory: (f: Filters) => request<CategoryTotal[]>(`/analytics/spending-by-category${toQueryString(f)}`),
   trends: (f: Filters) => request<MonthTotal[]>(`/analytics/trends${toQueryString(f)}`),
-  topMerchants: (f: Filters) => request<MerchantTotal[]>(`/analytics/top-merchants${toQueryString(f)}`),
+  topMerchants: (f: Filters, opts: { limit?: number; sort?: MerchantSort } = {}) =>
+    request<MerchantTotal[]>(`/analytics/top-merchants${toQueryString({ ...f, ...opts })}`),
   recurring: (f: Filters) => request<RecurringCharge[]>(`/analytics/recurring${toQueryString(f)}`),
 }

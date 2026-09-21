@@ -30,12 +30,19 @@ def spending_trends(conn: sqlite3.Connection, **filters) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def top_merchants(conn: sqlite3.Connection, limit: int = 10, **filters) -> list[dict]:
+# Fixed whitelist: the ORDER BY text comes from here, never from user input.
+MERCHANT_ORDER = {
+    "spent": "total DESC, merchant",
+    "visits": "count DESC, total DESC, merchant",
+}
+
+
+def top_merchants(conn: sqlite3.Connection, limit: int = 10, sort: str = "spent", **filters) -> list[dict]:
     where, params = _spending_where(**filters)
     rows = conn.execute(
         f"SELECT t.merchant_clean AS merchant, SUM({EFFECTIVE_AMOUNT}) AS total, COUNT(*) AS count "
         f"FROM transactions t WHERE {where} AND t.merchant_clean != '' "
-        f"GROUP BY t.merchant_clean ORDER BY total DESC, merchant LIMIT ?",
+        f"GROUP BY t.merchant_clean ORDER BY {MERCHANT_ORDER[sort]} LIMIT ?",
         [*params, limit],
     )
     return [dict(r) for r in rows]
