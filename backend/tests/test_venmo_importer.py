@@ -103,3 +103,46 @@ def test_fingerprint_uses_the_venmo_id_and_apple_is_unchanged():
     apple = RawTransaction(**base)
     assert fingerprint(1, apple) == fingerprint(1, RawTransaction(**base))
     assert fingerprint(1, apple) != fingerprint(1, a)
+
+
+def row(id_, amount="- $3.00", type_="Payment", status="Complete", date="2026-09-01T10:00:00"):
+    return f",{id_},{date},{type_},{status},x,Me,Them,{amount}\n".encode()
+
+
+def test_impossible_calendar_date_is_a_row_error():
+    result = parse(HEADER + row(5, date="2026-13-45T10:00:00"))
+    assert result.rows == []
+    assert [e.message for e in result.errors] == ["invalid date: '2026-13-45T10:00:00'"]
+
+
+def test_non_utf8_file_is_rejected_clearly():
+    with pytest.raises(ValueError, match="not UTF-8 text"):
+        parse(b"\xff\xfe\x00bad")
+
+
+def test_pending_then_complete_with_same_id_imports_the_complete_row():
+    result = parse(HEADER + row(9, status="Pending") + row(9, status="Complete"))
+    assert [r.external_id for r in result.rows] == ["9"]
+    assert [e.message for e in result.errors] == ["status: Pending"]
+
+
+def test_short_row_gives_a_clear_status_error():
+    result = parse(HEADER + b",8,2026-09-01T10:00:00,Payment\n")
+    assert [e.message for e in result.errors] == ["status: (blank)"]
+
+
+def test_amount_with_space_after_sign_and_missing_sign():
+    assert parse(HEADER + row(1, "+ $0.50")).rows[0].amount == -50
+    result = parse(HEADER + row(2, "$5.00"))
+    assert result.rows == [] and len(result.errors) == 1
+
+
+def test_instant_transfer_and_positive_transfer_amount():
+    (r,) = parse(HEADER + row(3, "- $10.00", "Instant Transfer")).rows
+    assert (r.type, r.amount) == ("transfer", 1000)
+    (r,) = parse(HEADER + row(4, "+ $10.00", "Standard Transfer")).rows
+    assert (r.type, r.amount) == ("transfer", -1000)
+
+
+def test_status_is_case_insensitive():
+    assert len(parse(HEADER + row(6, status="COMPLETE")).rows) == 1

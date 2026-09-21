@@ -1,3 +1,4 @@
+import csv
 import hashlib
 import json
 import sqlite3
@@ -41,7 +42,7 @@ def import_file(conn: sqlite3.Connection, account_id: int, filename: str, conten
 
     try:
         result = importer.parse(content)
-    except ValueError as exc:
+    except (ValueError, csv.Error) as exc:
         raise ValidationFailed(str(exc)) from exc
 
     aliases = load_aliases(conn)

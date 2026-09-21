@@ -1,6 +1,7 @@
 import csv
 import io
 import re
+from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from .base import ParseResult, RawTransaction, RowError
@@ -34,7 +35,11 @@ def _find_header(rows: list[list[str]]) -> int:
 
 class VenmoCsvImporter:
     def parse(self, content: bytes) -> ParseResult:
-        reader = csv.reader(io.StringIO(content.decode("utf-8-sig")))
+        try:
+            text = content.decode("utf-8-sig")
+        except UnicodeDecodeError as exc:
+            raise ValueError("Not a Venmo CSV; the file is not UTF-8 text") from exc
+        reader = csv.reader(io.StringIO(text))
         numbered = [(reader.line_num, row) for row in reader]
         header_at = _find_header([row for _, row in numbered])
         header = [c.strip() for c in numbered[header_at][1]]
@@ -49,9 +54,9 @@ class VenmoCsvImporter:
             external_id = (row.get("ID") or "").strip()
             if not external_id or external_id in seen:
                 continue
-            seen.add(external_id)
             try:
                 result.rows.append(self._parse_row(row, external_id))
+                seen.add(external_id)
             except ValueError as exc:
                 result.errors.append(RowError(line=line, message=str(exc) or "invalid row"))
         return result
@@ -60,10 +65,12 @@ class VenmoCsvImporter:
         get = lambda key: (row.get(key) or "").strip()  # noqa: E731
         status = get("Status")
         if status.lower() not in FINAL_STATUSES:
-            raise ValueError(f"status: {status}")
+            raise ValueError(f"status: {status or '(blank)'}")
         datetime_text = get("Datetime")
-        if not re.match(r"^\d{4}-\d{2}-\d{2}", datetime_text):
-            raise ValueError(f"invalid date: {datetime_text!r}")
+        try:
+            date.fromisoformat(datetime_text[:10])
+        except ValueError as exc:
+            raise ValueError(f"invalid date: {datetime_text!r}") from exc
         sign, cents = _signed_cents(get("Amount (total)"))
         paid = sign == "-"
         amount = cents if paid else -cents

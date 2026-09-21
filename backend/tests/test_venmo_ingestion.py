@@ -71,3 +71,26 @@ def test_wrong_file_for_a_venmo_account_is_a_400(client):
     apple = (Path(__file__).parent / "fixtures" / "apple_sample.csv").read_bytes()
     r = client.post("/api/imports", data={"account_id": acct["id"]}, files={"file": ("a.csv", apple)})
     assert r.status_code == 400 and "Not a Venmo CSV" in r.json()["detail"]
+
+
+def test_impossible_date_row_is_reported_and_not_inserted(client):
+    acct = make_venmo(client)
+    content = (
+        b",ID,Datetime,Type,Status,Note,From,To,Amount (total)\n"
+        b",77,2026-13-45T10:00:00,Payment,Complete,x,Me,Them,- $3.00\n"
+    )
+    r = client.post("/api/imports", data={"account_id": acct["id"]}, files={"file": ("v.csv", content)})
+    assert r.status_code in (200, 201), r.text
+    body = r.json()
+    assert (body["rows_added"], len(body["errors"])) == (0, 1)
+    assert client.get("/api/insights").status_code == 200
+
+
+def test_oversized_cell_is_a_400_not_a_500(client):
+    acct = make_venmo(client)
+    content = (
+        b",ID,Datetime,Type,Status,Note,From,To,Amount (total)\n"
+        b",78,2026-09-01T10:00:00,Payment,Complete,\"" + b"a" * 200000 + b"\",Me,Them,- $3.00\n"
+    )
+    r = client.post("/api/imports", data={"account_id": acct["id"]}, files={"file": ("v.csv", content)})
+    assert r.status_code == 400, r.text

@@ -52,7 +52,7 @@ Venmo rows have a unique `ID`. `RawTransaction` gets an optional `external_id`; 
 
 ## Edge cases
 
-- A payment and its "Return" on the same day do not cancel; both are kept (one spending, one money in).
+- A payment and its return (a Venmo note on an ordinary Payment row, not a Venmo type) on the same day do not cancel; both are kept (one spending, one money in).
 - Amounts are integer cents from decimal parsing; `$1,250.00` is handled.
 - A file where the user is charged by a friend (`Charge`, `- $9.00`) is spending, the same as a payment.
 
