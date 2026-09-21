@@ -212,6 +212,8 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 
 /* ---- Insights page ---------------------------------------------------------------------- */
 .insights-page .insights-header { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+.insights-page .insights-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.insights-page .insights-person { display: flex; gap: 0.5rem; align-items: center; }
 .insights-page .insights-picker { display: flex; gap: 0.5rem; align-items: center; }
 .insights-page .insight-glance { background: #fff; border: 1px solid #e3e5e8; border-radius: 8px; padding: 1rem 1.25rem; margin: 0.75rem 0 1rem; }
 .insights-page .insight-total { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; }

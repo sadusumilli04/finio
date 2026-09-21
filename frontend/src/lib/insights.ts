@@ -14,6 +14,11 @@ export function neighborMonth(available: string[], month: string, step: 1 | -1):
   return available[at + step] ?? null
 }
 
+/** Keep the chosen month only if it is one of the available months; otherwise undefined, meaning "the default month". */
+export function keepMonth(available: string[], month: string | undefined): string | undefined {
+  return month !== undefined && available.includes(month) ? month : undefined
+}
+
 export function formatPercent(pct: number): string {
   if (pct === 0) return '0%'
   const text = Number.isInteger(pct) ? String(pct) : pct.toFixed(1)

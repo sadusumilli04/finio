@@ -159,6 +159,6 @@ export const api = {
   trends: (f: Filters) => request<MonthTotal[]>(`/analytics/trends${toQueryString(f)}`),
   topMerchants: (f: Filters, opts: { limit?: number; sort?: MerchantSort } = {}) =>
     request<MerchantTotal[]>(`/analytics/top-merchants${toQueryString({ ...f, ...opts })}`),
-  insights: (month?: string) => request<Insights>(`/insights${toQueryString({ month })}`),
+  insights: (month?: string, cardholder?: string) => request<Insights>(`/insights${toQueryString({ month, cardholder })}`),
   recurring: (f: Filters) => request<RecurringCharge[]>(`/analytics/recurring${toQueryString(f)}`),
 }

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api, type CategoryMover, type Insights as InsightsData } from '../api'
 import InsightCard from '../components/InsightCard'
-import { changeText, formatPercent, monthLabel, neighborMonth, paceText, rankText, subscriptionTag } from '../lib/insights'
+import { changeText, formatPercent, keepMonth, monthLabel, neighborMonth, paceText, rankText, subscriptionTag } from '../lib/insights'
 import { formatCents } from '../lib/money'
 import { useFetch } from '../lib/useFetch'
 
@@ -54,8 +54,15 @@ function Glance({ data }: { data: InsightsData }) {
 
 export default function Insights() {
   const [month, setMonth] = useState<string | undefined>(undefined)
-  const insights = useFetch(() => api.insights(month), [month])
+  const [person, setPerson] = useState('')
+  const cardholders = useFetch(api.cardholders, [])
+  const insights = useFetch(() => api.insights(month, person), [month, person])
   const data = insights.data
+
+  // Changing the person keeps the month; if that person has no spending in it, fall back to their default month.
+  useEffect(() => {
+    if (data && keepMonth(data.available_months, month) !== month) setMonth(undefined)
+  }, [data, month])
 
   const newest = data ? [...data.available_months].reverse() : []
   const previous = data ? neighborMonth(data.available_months, data.month, -1) : null
@@ -65,23 +72,36 @@ export default function Insights() {
     <section className="insights-page">
       <div className="insights-header">
         <h1>Insights</h1>
-        {data && data.available_months.length > 0 && (
-          <div className="insights-picker">
-            <button type="button" aria-label="Previous month" disabled={previous === null} onClick={() => previous && setMonth(previous)}>
-              ←
-            </button>
-            <select aria-label="Month" value={data.month} onChange={(e) => setMonth(e.target.value)}>
-              {newest.map((m) => (
-                <option key={m} value={m}>
-                  {monthLabel(m, data.in_progress && m === data.month)}
+        <div className="insights-controls">
+          <label className="insights-person">
+            Person
+            <select aria-label="Person" value={person} onChange={(e) => setPerson(e.target.value)}>
+              <option value="">Everyone</option>
+              {cardholders.data?.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>
-            <button type="button" aria-label="Next month" disabled={next === null} onClick={() => next && setMonth(next)}>
-              →
-            </button>
-          </div>
-        )}
+          </label>
+          {data && data.available_months.length > 0 && (
+            <div className="insights-picker">
+              <button type="button" aria-label="Previous month" disabled={previous === null} onClick={() => previous && setMonth(previous)}>
+                ←
+              </button>
+              <select aria-label="Month" value={data.month} onChange={(e) => setMonth(e.target.value)}>
+                {newest.map((m) => (
+                  <option key={m} value={m}>
+                    {monthLabel(m, data.in_progress && m === data.month)}
+                  </option>
+                ))}
+              </select>
+              <button type="button" aria-label="Next month" disabled={next === null} onClick={() => next && setMonth(next)}>
+                →
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {insights.error ? (
@@ -89,7 +109,7 @@ export default function Insights() {
       ) : data === null ? (
         <p className="muted">Loading…</p>
       ) : data.available_months.length === 0 ? (
-        <p className="muted">Import a statement to see insights.</p>
+        <p className="muted">{person ? 'No spending for this person' : 'Import a statement to see insights.'}</p>
       ) : (
         <div className={insights.loading ? 'stale' : undefined}>
           <Glance data={data} />

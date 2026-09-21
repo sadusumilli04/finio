@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { changeText, formatPercent, monthLabel, neighborMonth, paceText, rankText, subscriptionTag } from './insights'
+import { changeText, keepMonth, formatPercent, monthLabel, neighborMonth, paceText, rankText, subscriptionTag } from './insights'
 
 describe('monthLabel', () => {
   it('spells out the month', () => expect(monthLabel('2026-09')).toBe('September 2026'))
@@ -66,4 +66,12 @@ describe('subscriptionTag', () => {
       'Price up', 'Price down', 'New', 'Missing',
     ])
   })
+})
+
+describe('keepMonth', () => {
+  const months = ['2026-07', '2026-08']
+  it('keeps a month the person has spending in', () => expect(keepMonth(months, '2026-08')).toBe('2026-08'))
+  it('drops a month they have no spending in, so the latest is chosen', () => expect(keepMonth(months, '2026-05')).toBeUndefined())
+  it('leaves the default alone', () => expect(keepMonth(months, undefined)).toBeUndefined())
+  it('drops everything when there is no spending at all', () => expect(keepMonth([], '2026-08')).toBeUndefined())
 })

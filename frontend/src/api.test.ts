@@ -60,4 +60,11 @@ describe('api.insights', () => {
     await api.insights('2026-08')
     expect(requested).toEqual(['/api/insights?month=2026-08'])
   })
+
+  it('sends the chosen cardholder, and nothing for everyone', async () => {
+    await api.insights('2026-08', 'Ann')
+    await api.insights(undefined, 'Ann')
+    await api.insights('2026-08', '')
+    expect(requested).toEqual(['/api/insights?month=2026-08&cardholder=Ann', '/api/insights?cardholder=Ann', '/api/insights?month=2026-08'])
+  })
 })
