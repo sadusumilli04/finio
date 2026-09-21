@@ -52,7 +52,7 @@ export default function Dashboard() {
   return (
     <section>
       <h1>Dashboard</h1>
-      <FilterBar filters={filters} onChange={setFilters} />
+      <FilterBar filters={filters} onChange={setFilters} presets />
       {errors.length > 0 ? (
         <p className="error">{errors.join(' · ')}</p>
       ) : notLoaded ? (

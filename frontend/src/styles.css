@@ -185,3 +185,12 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 .pie-legend .legend-percent { text-align: right; color: #66716c; font-variant-numeric: tabular-nums; }
 @media (max-width: 800px) { .chart-pair { grid-template-columns: 1fr; } }
 .median-swatch { display: inline-block; width: 1.5rem; margin-right: 0.5rem; vertical-align: middle; border-top: 2px dashed #1b2421; }
+
+/* ---- Date range presets (Dashboard) ---------------------------------------------------- */
+.preset-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0 0; }
+.preset-row button {
+  padding: 0.3rem 0.8rem; color: #1b2421; background: #fff; border: 1px solid #d5dcd8; border-radius: 999px; cursor: pointer;
+}
+.preset-row button:hover { border-color: #b3beb8; background: #f8faf9; }
+.preset-row button[aria-pressed='true'] { color: #fff; background: #0e6b4f; border-color: #0e6b4f; }
+.preset-row button:focus-visible { outline: 2px solid #0e6b4f; outline-offset: 2px; }
