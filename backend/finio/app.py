@@ -28,8 +28,8 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     for exc_type, status in STATUS.items():
         app.add_exception_handler(exc_type, make_handler(status))
 
-    from finio.api import accounts, analytics, categories, imports, rules, transactions
+    from finio.api import accounts, analytics, categories, imports, insights, rules, transactions
 
-    for module in (accounts, categories, imports, transactions, rules, analytics):
+    for module in (accounts, categories, imports, transactions, rules, analytics, insights):
         app.include_router(module.router, prefix="/api")
     return app
