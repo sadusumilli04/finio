@@ -9,6 +9,7 @@ export type Account = {
   source: AccountSource
   starting_balance: number
   starting_balance_date: string | null
+  transaction_count: number
 }
 export type Category = { id: number; name: string; parent_id: number | null }
 export type Direction = 'expense' | 'income' | 'refund'
@@ -85,6 +86,7 @@ export const api = {
   accounts: () => request<Account[]>('/accounts'),
   createAccount: (body: { name: string; type: AccountType; source: AccountSource }) =>
     request<Account>('/accounts', send('POST', body)),
+  deleteAccount: (id: number) => request<void>(`/accounts/${id}`, send('DELETE')),
   categories: () => request<Category[]>('/categories'),
   cardholders: () => request<string[]>('/cardholders'),
   merchants: () => request<string[]>('/merchants'),
