@@ -44,10 +44,14 @@ export default function AddTransactionForm({ initial, onDone, onCancel }: Props)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  // The remembered account may have been deleted since it was last used: only accept ids that still exist.
+  const selectedAccountId =
+    initial || accounts.data?.some((a) => String(a.id) === accountId) ? accountId : ''
+
   async function submit(e: FormEvent) {
     e.preventDefault()
     setError(null)
-    const check = validateManualForm({ accountId, date, amount, merchant, categoryId })
+    const check = validateManualForm({ accountId: selectedAccountId, date, amount, merchant, categoryId })
     if (!check.ok) return setError(check.error)
     setBusy(true)
     try {
@@ -61,8 +65,8 @@ export default function AddTransactionForm({ initial, onDone, onCancel }: Props)
         category_id: Number(categoryId),
       }
       if (initial) await api.updateTransaction(initial.id, shared)
-      else await api.createTransaction({ account_id: Number(accountId), ...shared })
-      remember(LAST_ACCOUNT, accountId)
+      else await api.createTransaction({ account_id: Number(selectedAccountId), ...shared })
+      remember(LAST_ACCOUNT, selectedAccountId)
       remember(LAST_DATE, date)
       onDone()
     } catch (err) {
@@ -78,7 +82,7 @@ export default function AddTransactionForm({ initial, onDone, onCancel }: Props)
       <div className="form-grid">
         <label>
           Account
-          <select value={accountId} onChange={(e) => setAccountId(e.target.value)} disabled={!!initial}>
+          <select value={selectedAccountId} onChange={(e) => setAccountId(e.target.value)} disabled={!!initial}>
             <option value="">Select…</option>
             {accounts.data?.map((a) => (
               <option key={a.id} value={a.id}>

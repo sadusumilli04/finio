@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api, type Filters, type Transaction } from '../api'
 import AddTransactionForm from '../components/AddTransactionForm'
 import FilterBar from '../components/FilterBar'
+import RowMenu from '../components/RowMenu'
 import { amountBounds } from '../lib/amountBounds'
+import { categoryColor } from '../lib/categoryColor'
+import { shortDate } from '../lib/date'
+import { buildChips, type Chip } from '../lib/filterChips'
 import { formatCents } from '../lib/money'
+import { mergePinned } from '../lib/pinnedRows'
 import { useFetch } from '../lib/useFetch'
 
 const PAGE_SIZE = 50
@@ -17,16 +23,22 @@ export default function Transactions() {
   const [minText, setMinText] = useState('')
   const [maxText, setMaxText] = useState('')
   const [page, setPage] = useState(0)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  // Rows just recategorized stay visible (highlighted) even if the active filters no longer match them,
+  // so "Make rule" can still be clicked. Cleared whenever the filters, sort or page change.
+  const [pinned, setPinned] = useState<Transaction[]>([])
 
   const bounds = amountBounds(minText, maxText)
   const minCents = bounds.min
   const maxCents = bounds.max
+  const amountProblem = bounds.rangeError ?? bounds.minError ?? bounds.maxError
 
   const categories = useFetch(api.categories, [])
+  const accounts = useFetch(api.accounts, [])
   const txns = useFetch(
     () =>
       api.transactions({
@@ -37,6 +49,30 @@ export default function Transactions() {
   )
 
   useEffect(() => setPage(0), [filters, q, categoryId, minCents, maxCents, sort, order])
+  useEffect(() => setPinned([]), [filters, q, categoryId, minCents, maxCents, sort, order, page])
+
+  const chips = buildChips(filters, {
+    accountName: (id) => accounts.data?.find((a) => String(a.id) === id)?.name,
+    minText,
+    maxText,
+  })
+  const hasAnyFilter = chips.length > 0 || q !== '' || categoryId !== ''
+
+  function removeChip(key: Chip['key']) {
+    if (key === 'date') setFilters((f) => ({ ...f, date_from: undefined, date_to: undefined }))
+    else if (key === 'cardholder') setFilters((f) => ({ ...f, cardholder: undefined }))
+    else if (key === 'account') setFilters((f) => ({ ...f, account_id: undefined }))
+    else {
+      setMinText('')
+      setMaxText('')
+    }
+  }
+
+  function clearAllFilters() {
+    setFilters({})
+    setMinText('')
+    setMaxText('')
+  }
 
   const messageOf = (err: unknown) => (err instanceof Error ? err.message : String(err))
 
@@ -44,7 +80,8 @@ export default function Transactions() {
     setActionError(null)
     setNotice(null)
     try {
-      await api.updateTransaction(t.id, { category_id: newCategoryId })
+      const updated = await api.updateTransaction(t.id, { category_id: newCategoryId })
+      setPinned((prev) => [updated, ...prev.filter((p) => p.id !== updated.id)])
     } catch (err) {
       setActionError(messageOf(err))
     } finally {
@@ -79,21 +116,37 @@ export default function Transactions() {
     setNotice(null)
     try {
       await api.deleteTransaction(t.id)
+      setPinned((prev) => prev.filter((p) => p.id !== t.id))
       txns.reload()
     } catch (err) {
       setActionError(messageOf(err))
     }
   }
 
+  const merged = txns.data ? mergePinned(txns.data.items, pinned) : null
   const total = txns.data?.total ?? 0
   const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1)
+  const firstShown = total === 0 ? 0 : page * PAGE_SIZE + 1
+  const lastShown = Math.min(total, (page + 1) * PAGE_SIZE)
 
   return (
-    <section>
-      <h1>Transactions</h1>
-      <FilterBar filters={filters} onChange={setFilters} />
-      <div className="form-row">
-        <input aria-label="Search merchant or description" placeholder="Search merchant or description" value={q} onChange={(e) => setQ(e.target.value)} />
+    <section className="txn-page">
+      <header className="txn-head">
+        <h1>Transactions</h1>
+        <button type="button" className="btn btn-primary" onClick={() => { setAdding(true); setEditing(null) }}>
+          Add transaction
+        </button>
+      </header>
+
+      <div className="txn-toolbar">
+        <input
+          className="txn-search"
+          type="search"
+          aria-label="Search merchant or description"
+          placeholder="Search merchant or description"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
         <select aria-label="Filter by category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
           <option value="">All categories</option>
           {categories.data?.map((c) => (
@@ -102,33 +155,66 @@ export default function Transactions() {
             </option>
           ))}
         </select>
-        <select aria-label="Sort order" value={`${sort}:${order}`} onChange={(e) => {
-          const [s, o] = e.target.value.split(':')
-          setSort(s)
-          setOrder(o as 'asc' | 'desc')
-        }}>
+        <select
+          aria-label="Sort order"
+          value={`${sort}:${order}`}
+          onChange={(e) => {
+            const [s, o] = e.target.value.split(':')
+            setSort(s)
+            setOrder(o as 'asc' | 'desc')
+          }}
+        >
           <option value="date:desc">Newest first</option>
           <option value="date:asc">Oldest first</option>
           <option value="amount:desc">Largest first</option>
           <option value="amount:asc">Smallest first</option>
           <option value="merchant:asc">Merchant A–Z</option>
         </select>
-        <label>
-          Min amount ($){' '}
-          <input inputMode="decimal" size={8} value={minText} onChange={(e) => setMinText(e.target.value)} />
-        </label>
-        {bounds.minError && <span className="error">{bounds.minError}</span>}
-        <label>
-          Max amount ($){' '}
-          <input inputMode="decimal" size={8} value={maxText} onChange={(e) => setMaxText(e.target.value)} />
-        </label>
-        {bounds.maxError && <span className="error">{bounds.maxError}</span>}
-        <button type="button" onClick={() => { setAdding(true); setEditing(null) }}>
-          Add transaction
+        <button
+          type="button"
+          className="btn"
+          aria-expanded={filtersOpen}
+          aria-controls="txn-filter-panel"
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          Filters
+          {chips.length > 0 && <span className="badge">{chips.length}</span>}
         </button>
       </div>
-      {bounds.rangeError && <p className="error">{bounds.rangeError}</p>}
-      <p className="muted">Amounts are per transaction; payments and refunds are negative.</p>
+
+      {filtersOpen && (
+        <div className="txn-filter-panel" id="txn-filter-panel">
+          <FilterBar filters={filters} onChange={setFilters} />
+          <div className="txn-amounts">
+            <label>
+              Min amount ($)
+              <input inputMode="decimal" size={8} value={minText} onChange={(e) => setMinText(e.target.value)} />
+            </label>
+            <label>
+              Max amount ($)
+              <input inputMode="decimal" size={8} value={maxText} onChange={(e) => setMaxText(e.target.value)} />
+            </label>
+          </div>
+          <p className="muted small">Amounts are per transaction; payments and refunds are negative.</p>
+        </div>
+      )}
+
+      {chips.length > 0 && (
+        <div className="txn-chips">
+          {chips.map((chip) => (
+            <span className="chip" key={chip.key}>
+              {chip.label}
+              <button type="button" aria-label={`Remove filter: ${chip.label}`} onClick={() => removeChip(chip.key)}>
+                ×
+              </button>
+            </span>
+          ))}
+          <button type="button" className="link-button" onClick={clearAllFilters}>
+            Clear all
+          </button>
+        </div>
+      )}
+      {amountProblem && <p className="error">{amountProblem}</p>}
 
       {(adding || editing) && (
         <AddTransactionForm
@@ -145,56 +231,96 @@ export default function Transactions() {
       {!txns.error && txns.data === null && <p className="muted">Loading…</p>}
       {!txns.error && txns.data !== null && (
         <div className={txns.loading ? 'stale' : undefined}>
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Merchant</th>
-              <th>Category</th>
-              <th>Account</th>
-              <th>Cardholder</th>
-              <th className="num">Amount</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {txns.data.items.map((t) => (
-              <tr key={t.id}>
-                <td>{t.transaction_date}</td>
-                <td title={t.description}>{t.merchant}</td>
-                <td>
-                  <select aria-label={`Category for ${t.merchant}`} value={t.category_id} onChange={(e) => void recategorize(t, Number(e.target.value))}>
-                    {categories.data?.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>{t.account_name}</td>
-                <td>{t.cardholder ?? ''}</td>
-                <td className={`num ${t.amount < 0 ? 'neg' : ''}`}>{formatCents(t.amount)}</td>
-                <td>
-                  <button type="button" onClick={() => void makeRule(t)}>Make rule</button>{' '}
-                  {t.origin === 'manual' && (
-                    <>
-                      <button type="button" onClick={() => { setEditing(t); setAdding(false) }}>Edit</button>{' '}
-                      <button type="button" onClick={() => void remove(t)}>Delete</button>
-                    </>
-                  )}
-                </td>
+          <table className="txn-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Merchant</th>
+                <th>Category</th>
+                <th className="num">Amount</th>
+                <th>
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {txns.data?.items.length === 0 && !txns.loading && <p className="muted">No transactions match.</p>}
-        <div className="pager">
-          <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</button>
-          <span>
-            Page {page + 1} of {lastPage + 1} · {total} transactions
-          </span>
-          <button type="button" disabled={page >= lastPage} onClick={() => setPage(page + 1)}>Next</button>
-        </div>
+            </thead>
+            <tbody>
+              {merged?.rows.map((t) => (
+                <tr key={t.id} className={merged.recentIds.has(t.id) ? 'recent' : undefined}>
+                  <td className="cell-date">{shortDate(t.transaction_date)}</td>
+                  <td className="cell-merchant">
+                    <div className="merchant-cell">
+                      <span className="dot" style={{ background: categoryColor(t.category_id, t.category) }} aria-hidden="true" />
+                      <span className="merchant-text">
+                        <span className="merchant-name" title={t.description}>{t.merchant}</span>
+                        <span className="merchant-sub">
+                          {t.account_name}
+                          {t.cardholder ? ` · ${t.cardholder}` : ''}
+                        </span>
+                      </span>
+                    </div>
+                  </td>
+                  <td className="cell-category">
+                    <select
+                      className="category-select"
+                      aria-label={`Category for ${t.merchant}`}
+                      value={t.category_id}
+                      onChange={(e) => void recategorize(t, Number(e.target.value))}
+                    >
+                      {categories.data?.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className={`num cell-amount ${t.amount < 0 ? 'neg' : ''}`}>{formatCents(t.amount)}</td>
+                  <td className="cell-actions">
+                    <RowMenu
+                      label={`Actions for ${t.merchant}`}
+                      items={[
+                        { label: 'Make rule', onSelect: () => void makeRule(t) },
+                        ...(t.origin === 'manual'
+                          ? [
+                              { label: 'Edit', onSelect: () => { setEditing(t); setAdding(false) } },
+                              { label: 'Delete', onSelect: () => void remove(t), danger: true },
+                            ]
+                          : []),
+                      ]}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {merged?.rows.length === 0 && !txns.loading && (
+            <p className="muted txn-empty">
+              {hasAnyFilter ? (
+                'No transactions match these filters.'
+              ) : (
+                <>
+                  No transactions yet. <Link to="/import">Import a statement</Link> or add one.
+                </>
+              )}
+            </p>
+          )}
+          {merged && merged.hiddenCount > 0 && (
+            <p className="muted small">
+              Highlighted rows were just recategorized and no longer match these filters. They stay listed until you change the filters.
+            </p>
+          )}
+          <div className="txn-pager">
+            <span className="muted">
+              {total === 0 ? '0 transactions' : `Showing ${firstShown}–${lastShown} of ${total.toLocaleString('en-US')}`}
+            </span>
+            <span className="txn-pager-buttons">
+              <button type="button" className="btn" disabled={page === 0} onClick={() => setPage(page - 1)}>
+                Previous
+              </button>
+              <button type="button" className="btn" disabled={page >= lastPage} onClick={() => setPage(page + 1)}>
+                Next
+              </button>
+            </span>
+          </div>
         </div>
       )}
     </section>

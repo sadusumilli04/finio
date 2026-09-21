@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { api, type AccountSource, type AccountType } from '../api'
+import { api, type Account, type AccountSource, type AccountType } from '../api'
+import { deleteAccountPrompt } from '../lib/accountDelete'
 import { useFetch } from '../lib/useFetch'
 
 export default function Accounts() {
@@ -22,6 +23,18 @@ export default function Accounts() {
     }
   }
 
+  async function remove(a: Account) {
+    if (!window.confirm(deleteAccountPrompt(a.name, a.transaction_count))) return
+    setError(null)
+    try {
+      await api.deleteAccount(a.id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      accounts.reload()
+    }
+  }
+
   return (
     <section>
       <h1>Accounts</h1>
@@ -34,6 +47,8 @@ export default function Accounts() {
             <th>Name</th>
             <th>Type</th>
             <th>Source</th>
+            <th className="num">Transactions</th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -42,6 +57,12 @@ export default function Accounts() {
               <td>{a.name}</td>
               <td>{a.type}</td>
               <td>{a.source === 'apple_card_csv' ? 'Apple Card CSV import' : 'Manual entry'}</td>
+              <td className="num">{a.transaction_count.toLocaleString('en-US')}</td>
+              <td>
+                <button type="button" onClick={() => void remove(a)}>
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

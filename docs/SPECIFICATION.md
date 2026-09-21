@@ -61,7 +61,7 @@ For accounts that have no importer (other banks, cards, websites), the user adds
 
 ## API (FastAPI)
 
-- `POST /imports` (file + account), `GET /accounts`, `POST /accounts`
+- `POST /imports` (file + account), `GET /accounts` (each with its `transaction_count`), `POST /accounts`, `DELETE /accounts/{id}` (deletes the account together with its transactions and import history, atomically; 404 if unknown)
 - `GET /transactions`: filters for date range, category, merchant, cardholder, amount range, account, text search; sorting and paging
 - `POST /transactions`: create a manual transaction
 - `PATCH /transactions/{id}`: recategorize any transaction; edit any field of a manual one
@@ -76,7 +76,7 @@ Screens:
 - **Transactions**: search, filters, inline recategorize, "create rule from this", and an **Add transaction** button that opens the manual entry form.
 - **Recurring**: detected recurring charges.
 - **Import**: drag and drop, with a results summary.
-- **Accounts**: list and create accounts, including manual accounts.
+- **Accounts**: list, create and delete accounts, including manual accounts. Deleting asks for confirmation and states how many transactions will be removed.
 
 A cardholder filter is available throughout.
 

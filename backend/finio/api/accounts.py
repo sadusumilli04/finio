@@ -1,10 +1,11 @@
 import sqlite3
 from typing import Literal
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel, Field
 
 from finio.deps import get_conn
+from finio.services import accounts as svc
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ class AccountIn(BaseModel):
 
 @router.get("/accounts")
 def list_accounts(conn: sqlite3.Connection = Depends(get_conn)):
-    return [dict(r) for r in conn.execute("SELECT * FROM accounts ORDER BY id")]
+    return svc.list_accounts(conn)
 
 
 @router.post("/accounts", status_code=201)
@@ -30,4 +31,10 @@ def create_account(body: AccountIn, conn: sqlite3.Connection = Depends(get_conn)
             "VALUES (?,?,?,?,?)",
             (body.name.strip(), body.type, body.source, body.starting_balance, body.starting_balance_date),
         )
-    return dict(conn.execute("SELECT * FROM accounts WHERE id = ?", (cur.lastrowid,)).fetchone())
+    return svc.get_account(conn, cur.lastrowid)
+
+
+@router.delete("/accounts/{account_id}", status_code=204)
+def delete_account(account_id: int, conn: sqlite3.Connection = Depends(get_conn)):
+    svc.delete_account(conn, account_id)
+    return Response(status_code=204)
