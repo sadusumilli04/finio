@@ -13,6 +13,7 @@ class RawTransaction:
     source_category: str | None
     raw_row: dict
     flagged: bool = False
+    external_id: str | None = None
 
 
 @dataclass(frozen=True)

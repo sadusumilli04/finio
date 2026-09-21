@@ -43,3 +43,17 @@ def test_fingerprint_stable_and_sensitive():
 
 def test_assign_occurrences_counts_repeats():
     assert assign_occurrences(["a", "b", "a", "a", "b"]) == [1, 1, 2, 3, 2]
+
+
+def test_fingerprint_with_external_id_ignores_other_details():
+    a = fingerprint(1, raw(external_id="V1"))
+    assert a == fingerprint(1, raw(external_id="V1", amount=999, raw_description="OTHER"))
+    assert a != fingerprint(1, raw(external_id="V2"))
+    assert a != fingerprint(2, raw(external_id="V1"))
+    assert a != fingerprint(1, raw())
+
+
+def test_fingerprint_without_external_id_keeps_the_apple_recipe():
+    import hashlib
+    expected = hashlib.sha256("|".join(["1", "2026-09-18", "2026-09-19", "500", "COFFEE"]).encode()).hexdigest()
+    assert fingerprint(1, raw()) == expected

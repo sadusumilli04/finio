@@ -5,10 +5,13 @@ from finio.importers.base import RawTransaction
 
 
 def fingerprint(account_id: int, r: RawTransaction) -> str:
-    parts = [
-        str(account_id), r.transaction_date, r.posted_date or "",
-        str(r.amount), r.raw_description,
-    ]
+    if r.external_id:
+        parts = [str(account_id), "id", r.external_id]
+    else:
+        parts = [
+            str(account_id), r.transaction_date, r.posted_date or "",
+            str(r.amount), r.raw_description,
+        ]
     return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()
 
 
