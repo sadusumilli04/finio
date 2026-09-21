@@ -4,6 +4,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem 3rem; }
 .nav { display: flex; gap: 1.25rem; align-items: center; padding: 0.75rem 1.5rem; background: #fff; border-bottom: 1px solid #e3e5e8; }
 .nav a { color: #555; text-decoration: none; padding: 0.25rem 0; }
 .nav a.active { color: #0a5; border-bottom: 2px solid #0a5; }
+@media (max-width: 720px) {
+  .nav { flex-wrap: wrap; gap: 0.25rem 1rem; }
+}
 .brand { font-weight: 700; margin-right: 1rem; }
 table { width: 100%; border-collapse: collapse; background: #fff; }
 th, td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid #eceef1; }
@@ -228,7 +231,4 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 .insights-page .tag-price_down, .insights-page .tag-new { background: #dff4e6; color: #0a5a2a; }
 @media (max-width: 720px) {
   .insights-page .insight-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 720px) {
-  .nav { flex-wrap: wrap; gap: 0.25rem 1rem; }
 }

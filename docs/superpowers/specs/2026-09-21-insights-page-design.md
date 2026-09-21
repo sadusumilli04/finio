@@ -83,7 +83,7 @@ A new **Insights** item in the top navigation after Dashboard, at `/insights`.
 
 ## Edge cases
 
-- Only one month of history: no previous month, so only the total is shown; movers and new merchants are empty; rank and typical are `null`.
+- Only one month of history: no previous month, so the total is shown; movers list every category with a change of $10 or more as new (`change_pct` null); new merchants are empty; rank and typical are `null`.
 - A previous month with no spending: changes are shown in dollars with no percent.
 - Comparing in-progress March with February uses days 1 to 28 of each and says so.
 - Splits, payments, refunds and $0 shares follow the Dashboard rules through `EFFECTIVE_AMOUNT`.

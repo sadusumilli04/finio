@@ -169,7 +169,7 @@ Work through these in order on an empty database. "Expect" is what should happen
 25. **Accounts** → **Delete** on the Apple Card account. Expect a confirmation that names the number of transactions that will be removed. After confirming, expect the account, its transactions and its import history to be gone, and importing the sample again to work.
 
 **Layout**
-26. Narrow the browser window to a phone width (about 390 px). Expect the Transactions table to switch to stacked cards with the amount and ⋯ menu still visible. The top navigation bar is known to overflow at this width (see below).
+26. Narrow the browser window to a phone width (about 390 px). Expect the Transactions table to switch to stacked cards with the amount and ⋯ menu still visible. The top navigation bar wraps onto a second row instead of overflowing.
 
 **Insights page**
 The sample data has one month only, so build a few more first. On a scratch account, add manual transactions across at least three months (for example Jun, Jul, Aug and Sep 2026): several groceries and restaurants purchases each month, a $15 "Streamer" subscription monthly (raise it to $20 in the latest month), a merchant that appears only in the latest month, and one large charge (for example $300 in Shopping after five smaller Shopping purchases).
@@ -177,7 +177,7 @@ The sample data has one month only, so build a few more first. On a scratch acco
 28. Change the month with the dropdown and with the previous/next arrows. Expect the numbers to change, the arrows to stop at the first and last months, and the page to dim while loading.
 29. Check **Month at a glance**: the total, the change in words against the compared days, the typical month and rank (only with at least 3 other complete months), and, for an in-progress month, the day count and pace (from day 7).
 30. Check each card: Biggest movers (went up / went down), New merchants (your one-month merchant), Merchants that grew, Unusual charges (the $300 charge with its typical amount), Subscription changes (Streamer as Price up).
-31. Pick the earliest month. Expect no new merchants or movers and a note about missing history. On an empty database, expect "Import a statement to see insights".
+31. Pick the earliest month. Expect no new merchants, no rank or typical month, and a note about missing history; every category with a change of $10 or more is listed under "went up" and labelled "new" (there is no previous spending to compare with). On an empty database, expect "Import a statement to see insights".
 
 ## 7. Things worth trying to break
 
@@ -195,7 +195,6 @@ These are already documented, so you don't need to report them:
 - Renaming a category doesn't stop a later import (or re-applying rules) from re-creating the old name. See [Known limitations in the README](../README.md#known-limitations).
 - The duplicate detection includes the clearing date, so a transaction whose clearing date changes between two exports can be imported twice.
 - There is no undo for an import batch, and no screen for managing categories, rules or merchant aliases (those are available through the API).
-- The top navigation bar overflows on phone-width screens.
 
 ## Reporting a bug
 
