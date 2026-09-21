@@ -2,11 +2,13 @@ import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import Accounts from './pages/Accounts'
 import Dashboard from './pages/Dashboard'
 import Import from './pages/Import'
+import Insights from './pages/Insights'
 import Recurring from './pages/Recurring'
 import Transactions from './pages/Transactions'
 
 const links = [
   ['/', 'Dashboard'],
+  ['/insights', 'Insights'],
   ['/transactions', 'Transactions'],
   ['/recurring', 'Recurring'],
   ['/import', 'Import'],
@@ -27,6 +29,7 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/insights" element={<Insights />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/recurring" element={<Recurring />} />
           <Route path="/import" element={<Import />} />

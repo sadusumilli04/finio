@@ -206,3 +206,26 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 /* ---- Dashboard: top merchants controls ------------------------------------------------- */
 .panel-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .panel-controls select { padding: 0.3rem 0.5rem; border: 1px solid #d5dcd8; border-radius: 8px; background: #fff; }
+
+/* ---- Insights page ---------------------------------------------------------------------- */
+.insights-page .insights-header { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+.insights-page .insights-picker { display: flex; gap: 0.5rem; align-items: center; }
+.insights-page .insight-glance { background: #fff; border: 1px solid #e3e5e8; border-radius: 8px; padding: 1rem 1.25rem; margin: 0.75rem 0 1rem; }
+.insights-page .insight-total { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.insights-page .insight-facts { list-style: none; padding: 0; margin: 0.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; }
+.insights-page .insight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.insights-page .insight-card { background: #fff; border: 1px solid #e3e5e8; border-radius: 8px; padding: 0.75rem 1rem 1rem; }
+.insights-page .insight-card h2 { margin: 0 0 0.15rem; font-size: 1.05rem; }
+.insights-page .insight-card h3 { margin: 0.75rem 0 0.25rem; font-size: 0.85rem; color: #555; }
+.insights-page .insight-note { margin: 0 0 0.5rem; font-size: 0.8rem; }
+.insights-page .insight-list { list-style: none; padding: 0; margin: 0; }
+.insights-page .insight-list li { display: grid; grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1.2fr); gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid #eceef1; font-variant-numeric: tabular-nums; }
+.insights-page .insight-list li > :nth-child(3) { text-align: right; font-size: 0.85rem; }
+.insights-page .up { color: #b25400; }
+.insights-page .down { color: #0a7a3a; }
+.insights-page .tag { font-size: 0.7rem; padding: 0.05rem 0.4rem; border-radius: 999px; background: #eceef1; color: #444; margin-left: 0.25rem; }
+.insights-page .tag-price_up, .insights-page .tag-missing { background: #ffe9d6; color: #8a3f00; }
+.insights-page .tag-price_down, .insights-page .tag-new { background: #dff4e6; color: #0a5a2a; }
+@media (max-width: 720px) {
+  .insights-page .insight-grid { grid-template-columns: 1fr; }
+}
