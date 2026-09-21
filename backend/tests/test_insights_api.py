@@ -76,3 +76,21 @@ def test_months_after_today_are_not_offered(client, conn, make_account):
     insert_txn(conn, acct, date="2026-11-05", amount=99999)      # dated in the future
     pin_today(client, date(2026, 9, 20))
     assert client.get("/api/insights").json()["available_months"] == ["2026-08"]
+
+
+def test_bad_year_is_rejected(client):
+    pin_today(client, date(2026, 9, 20))
+    assert client.get("/api/insights", params={"month": "0000-01"}).status_code == 400
+
+
+def test_a_valid_month_without_spending_is_empty(client, conn, make_account):
+    acct = make_account()
+    insert_txn(conn, acct, date="2026-08-05", amount=10000)
+    insert_txn(conn, acct, date="2026-09-05", amount=20000)
+    pin_today(client, date(2026, 9, 20))
+    r = client.get("/api/insights", params={"month": "2026-07"})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["month"] == "2026-07" and d["summary"]["total"] == 0
+    assert d["movers"] == {"up": [], "down": []}
+    assert d["new_merchants"] == [] and d["growing_merchants"] == [] and d["unusual_charges"] == [] and d["subscriptions"] == []

@@ -45,7 +45,8 @@ def test_a_future_month_is_rejected():
         build_windows("2027-01", date(2026, 9, 20))
 
 
-@pytest.mark.parametrize("bad", ["", "abc", "2026-9", "26-09", "2026-13", "2026-00", "2026/09", "2026-09-01"])
+@pytest.mark.parametrize("bad", ["", "abc", "2026-9", "26-09", "2026-13", "2026-00", "2026/09", "2026-09-01",
+                                 "0000-01", "1899-12", "202\u00b2-09", "\u0662\u0660\u0662\u0666-\u0660\u0669"])
 def test_malformed_months_are_rejected(bad):
     with pytest.raises(ValidationFailed):
         parse_month(bad)

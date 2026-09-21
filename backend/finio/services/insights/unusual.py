@@ -31,7 +31,7 @@ def build_unusual(conn: sqlite3.Connection, windows: Windows) -> list[dict]:
     history = _category_history(conn, windows.month_start)
     where, params = spending_where(date_from=windows.current_start, date_to=windows.current_end)
     rows = conn.execute(
-        f"SELECT t.id AS transaction_id, t.transaction_date AS date, t.merchant_clean AS merchant, "
+        f"SELECT t.id AS transaction_id, t.transaction_date AS date, COALESCE(NULLIF(t.merchant_clean, ''), t.raw_description) AS merchant, "
         f"t.category_id AS category_id, c.name AS category, {EFFECTIVE_AMOUNT} AS amount "
         f"FROM transactions t JOIN categories c ON c.id = t.category_id "
         f"WHERE {where} AND {EFFECTIVE_AMOUNT} > 0",

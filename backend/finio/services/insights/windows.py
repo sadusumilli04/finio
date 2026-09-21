@@ -1,4 +1,5 @@
 import calendar
+import re
 from dataclasses import dataclass
 from datetime import date
 
@@ -21,11 +22,10 @@ class Windows:
 
 
 def parse_month(text: str) -> tuple[int, int]:
-    parts = text.split("-")
-    if len(parts) != 2 or len(parts[0]) != 4 or len(parts[1]) != 2 or not all(p.isdigit() for p in parts):
+    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}", text):
         raise ValidationFailed("month must look like 2026-09")
-    year, month = int(parts[0]), int(parts[1])
-    if not 1 <= month <= 12:
+    year, month = int(text[:4]), int(text[5:])
+    if year < 1900 or not 1 <= month <= 12:
         raise ValidationFailed("month must look like 2026-09")
     return year, month
 

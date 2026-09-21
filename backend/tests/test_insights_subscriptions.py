@@ -71,3 +71,18 @@ def test_a_month_without_earlier_history_has_no_missing_items(conn, make_account
     series(conn, acct, "Gym", ["2026-06-03", "2026-07-03", "2026-08-03"], [1000] * 3)
     june = build_windows("2026-06", date(2026, 9, 20))          # the merchant's first month: nothing before it
     assert [i for i in build_subscriptions(conn, june) if i["kind"] == "missing"] == []
+
+
+def test_price_down_item_fields(conn, make_account):
+    acct = make_account()
+    series(conn, acct, "Dropbox", monthly(10, range(3, 9)), [1200] * 5 + [1000])
+    assert build_subscriptions(conn, AUG) == [
+        {"merchant": "Dropbox", "kind": "price_down", "current": 1000, "previous": 1200, "expected_date": None}]
+
+
+def test_a_new_item_without_a_charge_in_the_window_has_no_current(conn, make_account):
+    acct = make_account()
+    series(conn, acct, "Hulu", ["2026-07-03", "2026-08-03", "2026-09-03"], [1500] * 3)   # September's charge lands after "today"
+    early = build_windows("2026-09", date(2026, 9, 2))
+    new = [i for i in build_subscriptions(conn, early) if i["kind"] == "new"]
+    assert new == [{"merchant": "Hulu", "kind": "new", "current": None, "previous": None, "expected_date": None}]

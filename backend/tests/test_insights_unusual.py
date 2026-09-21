@@ -82,3 +82,10 @@ def test_largest_first_and_at_most_five(conn, make_account):
         insert_txn(conn, acct, date="2026-09-10", amount=20000 + i * 1000, category="Shopping", merchant=f"Big{i}")
     found = build_unusual(conn, SEP)
     assert [u["merchant"] for u in found] == ["Big6", "Big5", "Big4", "Big3", "Big2"]
+
+
+def test_a_blank_merchant_falls_back_to_the_raw_description(conn, make_account):
+    acct = make_account()
+    seed_history(conn, acct)
+    big = insert_txn(conn, acct, date="2026-09-12", amount=15000, category="Shopping", merchant="", description="RAW STORE 42")
+    assert [(u["transaction_id"], u["merchant"]) for u in build_unusual(conn, SEP)] == [(big, "RAW STORE 42")]
