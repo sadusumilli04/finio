@@ -8,10 +8,10 @@ A page that tells the user, month by month, what stands out in their spending: h
 
 ## Decisions
 
-- **Scope of v1** (chosen by the user): the month summary and pace, what changed (biggest movers, new merchants, merchants that grew), and unusual charges and subscription changes. Left for later: weekday/weekend patterns, the cardholder split, and "covered for others".
+- **Scope of v1** (chosen by the user): the month summary and pace, what changed (biggest movers, new merchants, merchants that grew), and unusual charges and subscription changes. Left for later: weekday/weekend patterns, a side-by-side cardholder comparison, and "covered for others".
 - **Architecture:** one backend endpoint, `GET /api/insights`, computes everything in a new service module and returns a structured result; the page only displays it. Each insight is its own small function so more can be added later. Rejected: assembling insights in the browser from existing endpoints (many requests, spending rules duplicated in TypeScript, and first-time merchants and outlier charges need raw transactions), and storing precomputed insights (over-built, can go stale).
 - **Month selection:** a picker of the months that have spending. The page opens on the current month (in progress) or, if the current month has no spending yet, on the latest month with data.
-- **No filters in v1** (no account or cardholder filter).
+- **Person filter:** an optional cardholder ("Everyone" by default) limits every insight, the month list, the typical month, the rank and the category history behind unusual charges to that person. There is no account filter.
 - Income and net cash flow are out of scope: Apple Card data has no income.
 
 ## Definitions
@@ -44,7 +44,7 @@ All thresholds ($10, $25, 1.5x, 3x, $50, 5 earlier purchases, 5%, $1, 3 months, 
 
 ## API
 
-`GET /api/insights?month=YYYY-MM` (`month` optional). Amounts in cents.
+`GET /api/insights?month=YYYY-MM&cardholder=NAME` (`month` and `cardholder` optional; empty means everyone; an unknown cardholder returns an empty result with `available_months` empty). Amounts in cents.
 
 ```
 {
@@ -75,11 +75,11 @@ All thresholds ($10, $25, 1.5x, 3x, $50, 5 earlier purchases, 5%, $1, 3 months, 
 
 A new **Insights** item in the top navigation after Dashboard, at `/insights`.
 
-- **Header:** the page title, a month dropdown (months with spending, newest first, the current one labelled "in progress") and previous/next arrows.
+- **Header:** the page title, a Person dropdown ("Everyone" plus each cardholder), a month dropdown (months with spending, newest first, the current one labelled "in progress") and previous/next arrows.
 - **Month at a glance** (full width): the big total ("so far" while in progress), the change against last month in words ("Up $212.00 (+12%) vs Aug 1–20", colour-coded orange for up and green for down but always written out), the typical month, the rank ("3rd highest of 9 months"), and for an in-progress month "Day 20 of 30 · on pace for $1,851".
 - **Cards** in a two-column grid (one column on a phone): Biggest movers (went up / went down), New merchants, Merchants that grew, Unusual charges (each showing "typical for <category>: $X"), Subscription changes (with a small tag: Price up, Price down, New, Missing). Each card has a one-line note on how it was computed and its own empty message ("No unusual charges this month"); where history is short it says what is missing ("Needs at least 3 other full months").
-- **States:** an error alone, then "Loading…", then the content dimmed while refetching, like the Dashboard. With no data at all the page says "Import a statement to see insights".
-- **Not in v1:** clicking a merchant to jump to its transactions, and account or cardholder filters.
+- **States:** an error alone, then "Loading…", then the content dimmed while refetching, like the Dashboard. With no data at all the page says "Import a statement to see insights"; a person with no spending gets "No spending for this person". Changing the person keeps the month if that person has spending in it, otherwise the page falls back to their default month.
+- **Not in v1:** clicking a merchant to jump to its transactions, and an account filter.
 
 ## Edge cases
 

@@ -68,6 +68,7 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R44.** Unusual charges: purchases far above what is typical for their category (at least 3x the category median and $50, with enough history).
 - **R45.** Subscription changes: monthly recurring charges whose price went up or down, that are new, or that look missing.
 - **R46.** Insights count only my share of split purchases and leave out $0 shares, like all other spending (R26).
+- **R47.** A Person filter on Insights ("Everyone" or one cardholder) limits every insight, the month list, the typical month and the rank to that person's spending. Changing the person keeps the selected month if that person has spending in it, otherwise it jumps to their latest month.
 
 ## Screens
 
