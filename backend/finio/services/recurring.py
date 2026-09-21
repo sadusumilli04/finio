@@ -3,6 +3,7 @@ import statistics
 from collections import defaultdict
 from datetime import date, timedelta
 
+from finio.services.amounts import EFFECTIVE_AMOUNT
 from finio.services.filters import where_clause
 
 MIN_OCCURRENCES = 3
@@ -47,8 +48,9 @@ def detect(merchant: str, txns: list[tuple[str, int]]) -> dict | None:
 def find_recurring(conn: sqlite3.Connection, **filters) -> list[dict]:
     where, params = where_clause(**filters)
     rows = conn.execute(
-        "SELECT t.merchant_clean AS merchant, t.transaction_date AS d, t.amount AS amount "
-        f"FROM transactions t WHERE t.type = 'purchase' AND t.merchant_clean != '' AND {where}",
+        f"SELECT t.merchant_clean AS merchant, t.transaction_date AS d, {EFFECTIVE_AMOUNT} AS amount "
+        f"FROM transactions t WHERE t.type = 'purchase' AND {EFFECTIVE_AMOUNT} > 0 "
+        f"AND t.merchant_clean != '' AND {where}",
         params,
     )
     grouped: dict[str, list[tuple[str, int]]] = defaultdict(list)
