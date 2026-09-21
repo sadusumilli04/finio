@@ -26,8 +26,8 @@ Header rows come first: a title row (`Account Statement - (@username)`), an `Acc
 | `Standard Transfer` (and `Instant Transfer`) | `transfer` | `+X` if sent out, otherwise `-X` | not spending, kept for the record |
 | Anything else | `other`, flagged | by sign | shown in the import summary, as with Apple |
 
-- **Merchant:** the counterparty. For a row where you pay, the `To` name; where you receive, the `From` name. Transfers use `Venmo transfer` as the merchant.
-- **Description** (`raw_description`): the note. Rules that match on description or merchant work, so a rule such as "bjs → Grocery" applies.
+- **Merchant:** the counterparty. In a `Payment` row `From` is the payer and `To` the payee; in a `Charge` row `From` is the requester and `To` the person charged. So the counterparty is `To` for a Payment you pay, `From` for a Payment you receive, `From` for a Charge you pay, and `To` for a Charge you receive. Transfers use `Venmo transfer` as the merchant.
+- **Description** (`raw_description`): the note (`Venmo payment`, `Venmo charge` or the transfer type when the note is blank). Rules that match on description or merchant work, so a rule such as "bjs → Grocery" applies.
 - **Category:** `source_category = "Friends & Family"` for payments and charges, so the existing behaviour for an unknown source category creates and assigns it. Transfers use `Other`.
 - **Dates:** `transaction_date` is the date part of `Datetime`. There is no posted date.
 - **Cardholder:** none.
