@@ -248,7 +248,7 @@ def _find_header(rows: list[list[str]]) -> int:
         cells = {c.strip() for c in row}
         if "ID" in cells and "Datetime" in cells:
             return index
-    raise ValueError(f"Not a Venmo CSV; missing columns: {sorted(REQUIRED_COLUMNS - {'Type'} | {'Type'})}")
+    raise ValueError(f"Not a Venmo CSV; missing columns: {sorted(REQUIRED_COLUMNS)}")
 
 
 class VenmoCsvImporter:
@@ -270,12 +270,9 @@ class VenmoCsvImporter:
                 continue
             seen.add(external_id)
             try:
-                parsed = self._parse_row(row, external_id)
+                result.rows.append(self._parse_row(row, external_id))
             except ValueError as exc:
                 result.errors.append(RowError(line=line, message=str(exc) or "invalid row"))
-                continue
-            if parsed is not None:
-                result.rows.append(parsed)
         return result
 
     def _parse_row(self, row: dict, external_id: str) -> RawTransaction:
@@ -302,7 +299,7 @@ class VenmoCsvImporter:
             else:
                 counterparty = get("To") if paid else get("From")
             merchant, category = counterparty, FRIENDS
-            fallback_note = f"Venmo {lowered}" if lowered in {"payment", "charge"} else f"Venmo {lowered or 'transaction'}"
+            fallback_note = f"Venmo {lowered}" if lowered else "Venmo transaction"
             if lowered in {"payment", "charge"}:
                 type_, flagged = ("purchase" if paid else "payment"), False
             else:
@@ -322,7 +319,7 @@ class VenmoCsvImporter:
             external_id=external_id,
         )
 ```
-Clean up while implementing: the `_find_header` error message must simply list the required columns that are missing from the whole file, i.e. `sorted(REQUIRED_COLUMNS)` when no header row is found (the expression above is a placeholder that evaluates to the same sorted list; write it plainly as `sorted(REQUIRED_COLUMNS)`), and simplify `fallback_note` to `f"Venmo {lowered}" if lowered else "Venmo transaction"`. `_parse_row` always returns a `RawTransaction` (it raises `ValueError` for skipped statuses), so drop the `if parsed is not None` guard and its `Optional` handling. `line` for errors: `csv.reader.line_num` after reading a multi-line cell is the last physical line; that is fine for this file.
+Note: `csv.reader.line_num` after a multi-line cell is the last physical line; that is fine for this file. `_parse_row` raises `ValueError` for skipped statuses, which becomes a row error.
 
 - [ ] **Step 5: Run to verify pass**
 
