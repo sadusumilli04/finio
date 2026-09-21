@@ -34,7 +34,7 @@ npm ci
 ## 2. Run the automated tests
 
 ```bash
-cd backend && .venv/bin/pytest -q          # backend: importer, dedup, rules, splits, analytics, API
+cd backend && .venv/bin/pytest -q          # backend: importer, dedup, rules, splits, analytics, insights (tests/test_insights_*.py), API
 cd ../frontend && npm test                 # frontend: helpers (money, dates, filters, splits, ...)
 npm run build                              # type-checks (tsc) and builds the frontend
 ```
@@ -170,6 +170,14 @@ Work through these in order on an empty database. "Expect" is what should happen
 
 **Layout**
 26. Narrow the browser window to a phone width (about 390 px). Expect the Transactions table to switch to stacked cards with the amount and ⋯ menu still visible. The top navigation bar is known to overflow at this width (see below).
+
+**Insights page**
+The sample data has one month only, so build a few more first. On a scratch account, add manual transactions across at least three months (for example Jun, Jul, Aug and Sep 2026): several groceries and restaurants purchases each month, a $15 "Streamer" subscription monthly (raise it to $20 in the latest month), a merchant that appears only in the latest month, and one large charge (for example $300 in Shopping after five smaller Shopping purchases).
+27. Open **Insights** from the top navigation. Expect the latest month selected, and "in progress" if it is the current calendar month.
+28. Change the month with the dropdown and with the previous/next arrows. Expect the numbers to change, the arrows to stop at the first and last months, and the page to dim while loading.
+29. Check **Month at a glance**: the total, the change in words against the compared days, the typical month and rank (only with at least 3 other complete months), and, for an in-progress month, the day count and pace (from day 7).
+30. Check each card: Biggest movers (went up / went down), New merchants (your one-month merchant), Merchants that grew, Unusual charges (the $300 charge with its typical amount), Subscription changes (Streamer as Price up).
+31. Pick the earliest month. Expect no new merchants or movers and a note about missing history. On an empty database, expect "Import a statement to see insights".
 
 ## 7. Things worth trying to break
 

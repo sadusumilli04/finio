@@ -35,6 +35,7 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 
 - `backend/finio/importers/`: one class per source, `parse(bytes) -> ParseResult` of normalized `RawTransaction`s. Adding an account type means adding an importer and registering it in `services/ingestion.py` `IMPORTERS`.
 - `backend/finio/services/`: all business logic (ingestion and dedup, category rules, filters, transactions, analytics, recurring detection). Routes stay thin.
+- `backend/finio/services/insights/`: the monthly insights (one small module per group of insights, thresholds in `constants.py`), assembled by `build_insights` behind `GET /api/insights`.
 - `backend/finio/api/`: routers, all mounted under `/api` in `app.py`. Domain errors from `finio/errors.py` (`NotFoundError` 404, `ForbiddenError` 403, `ConflictError` 409, `ValidationFailed` 400) are mapped to HTTP responses centrally; raise them from services instead of using `HTTPException`.
 - `backend/finio/db.py`: stdlib `sqlite3` with the schema inline, no ORM; schema version tracked in `PRAGMA user_version`; `_migrate` upgrades existing databases (currently to version 2). Connections are per request (`deps.get_conn`).
 - `frontend/src/api.ts`: the only place that talks to the backend; pages live in `src/pages/`.

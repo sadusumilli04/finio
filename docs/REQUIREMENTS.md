@@ -58,9 +58,20 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R37.** Top merchants on the Dashboard: I can choose how many to show (5, 10, 25 or 50) and rank them by most spent or by most visits.
 - **R38.** The Dashboard can be filtered by category, in addition to date range, cardholder and account.
 
+## Insights
+
+- **R39.** An Insights page, opened from the top navigation, tells me month by month what stands out in my spending. A month picker lists the months that have spending, with previous/next arrows; it opens on the current month, or the latest month with spending if the current one has none.
+- **R40.** A month summary shows the total, the change against the previous month, my typical month (needs at least 3 other complete months), the month's rank among complete months, and for an in-progress month a projected month-end total (from day 7). An in-progress month is compared only with the same days of the previous month.
+- **R41.** Biggest movers: the categories that went up and down the most against the previous month (changes under $10 ignored).
+- **R42.** New merchants: merchants I had never spent at before this month.
+- **R43.** Merchants that grew: merchants whose spending rose by at least $25 and 1.5x against the previous month.
+- **R44.** Unusual charges: purchases far above what is typical for their category (at least 3x the category median and $50, with enough history).
+- **R45.** Subscription changes: monthly recurring charges whose price went up or down, that are new, or that look missing.
+- **R46.** Insights count only my share of split purchases and leave out $0 shares, like all other spending (R26).
+
 ## Screens
 
-- **R28.** Dashboard, Transactions, Recurring, Import, and Accounts.
+- **R28.** Dashboard, Insights, Transactions, Recurring, Import, and Accounts.
 
 ## Quality and process
 
