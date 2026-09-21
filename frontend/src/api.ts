@@ -1,7 +1,7 @@
 import { toQueryString } from './lib/query'
 
 export type AccountType = 'credit_card' | 'checking' | 'savings' | 'other'
-export type AccountSource = 'apple_card_csv' | 'manual'
+export type AccountSource = 'apple_card_csv' | 'venmo_csv' | 'manual'
 export type Account = {
   id: number
   name: string

@@ -4,7 +4,7 @@ import { useFetch } from '../lib/useFetch'
 
 export default function Import() {
   const accounts = useFetch(api.accounts, [])
-  const importable = accounts.data?.filter((a) => a.source === 'apple_card_csv') ?? []
+  const importable = accounts.data?.filter((a) => a.source === 'apple_card_csv' || a.source === 'venmo_csv') ?? []
   const [accountId, setAccountId] = useState<number | null>(null)
   const [summary, setSummary] = useState<ImportSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -14,7 +14,7 @@ export default function Import() {
 
   async function upload(file: File) {
     if (inFlight.current) return
-    if (selected === null) return setError('Create an Apple Card account first')
+    if (selected === null) return setError('Create an Apple Card or Venmo account first')
     inFlight.current = true
     setBusy(true)
     setError(null)
@@ -42,7 +42,7 @@ export default function Import() {
       {!accounts.error && accounts.data === null && <p className="muted">Loading…</p>}
       {accounts.data !== null && importable.length === 0 && (
         <p className="muted">
-          No Apple Card account yet. Add one on the Accounts page with source &ldquo;Apple Card CSV import&rdquo;.
+          No importable account yet. Add one on the Accounts page with source &ldquo;Apple Card CSV import&rdquo; or &ldquo;Venmo CSV import&rdquo;.
         </p>
       )}
       {importable.length > 0 && (
@@ -58,7 +58,7 @@ export default function Import() {
             </select>
           </label>
           <div className="dropzone" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
-            <p>{busy ? 'Importing…' : 'Drop an Apple Card CSV here, or choose a file'}</p>
+            <p>{busy ? 'Importing…' : 'Drop a CSV here, or choose a file'}</p>
             <input
               type="file"
               accept=".csv,text/csv"

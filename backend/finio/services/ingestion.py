@@ -7,11 +7,12 @@ from datetime import UTC, datetime
 from finio.errors import ConflictError, NotFoundError, ValidationFailed
 from finio.importers.apple_card_csv import AppleCardCsvImporter
 from finio.importers.base import RowError
+from finio.importers.venmo_csv import VenmoCsvImporter
 from finio.services.dedup import assign_occurrences, fingerprint
 from finio.services.merchants import clean_merchant, load_aliases
 from finio.services.rules import load_rules, resolve_category
 
-IMPORTERS = {"apple_card_csv": AppleCardCsvImporter()}
+IMPORTERS = {"apple_card_csv": AppleCardCsvImporter(), "venmo_csv": VenmoCsvImporter()}
 
 
 @dataclass

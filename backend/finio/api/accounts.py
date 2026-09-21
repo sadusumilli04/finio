@@ -13,7 +13,7 @@ router = APIRouter()
 class AccountIn(BaseModel):
     name: str = Field(min_length=1)
     type: Literal["credit_card", "checking", "savings", "other"]
-    source: Literal["apple_card_csv", "manual"]
+    source: Literal["apple_card_csv", "venmo_csv", "manual"]
     starting_balance: int = 0
     starting_balance_date: str | None = None
 

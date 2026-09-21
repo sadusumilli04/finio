@@ -3,6 +3,12 @@ import { api, type Account, type AccountSource, type AccountType } from '../api'
 import { deleteAccountPrompt } from '../lib/accountDelete'
 import { useFetch } from '../lib/useFetch'
 
+const SOURCE_LABELS: Record<AccountSource, string> = {
+  apple_card_csv: 'Apple Card CSV import',
+  venmo_csv: 'Venmo CSV import',
+  manual: 'Manual entry',
+}
+
 export default function Accounts() {
   const accounts = useFetch(api.accounts, [])
   const [name, setName] = useState('')
@@ -56,7 +62,7 @@ export default function Accounts() {
             <tr key={a.id}>
               <td>{a.name}</td>
               <td>{a.type}</td>
-              <td>{a.source === 'apple_card_csv' ? 'Apple Card CSV import' : 'Manual entry'}</td>
+              <td>{SOURCE_LABELS[a.source]}</td>
               <td className="num">{a.transaction_count.toLocaleString('en-US')}</td>
               <td>
                 <button type="button" onClick={() => void remove(a)}>
@@ -81,6 +87,7 @@ export default function Accounts() {
         </select>
         <select value={source} onChange={(e) => setSource(e.target.value as AccountSource)}>
           <option value="apple_card_csv">Apple Card CSV import</option>
+          <option value="venmo_csv">Venmo CSV import</option>
           <option value="manual">Manual entry</option>
         </select>
         <button type="submit">Add</button>
