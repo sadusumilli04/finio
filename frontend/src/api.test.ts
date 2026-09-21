@@ -49,3 +49,15 @@ describe('the category filter on the other dashboard endpoints', () => {
     ])
   })
 })
+
+describe('api.insights', () => {
+  it('asks for the default month when none is given', async () => {
+    await api.insights()
+    expect(requested).toEqual(['/api/insights'])
+  })
+
+  it('sends the chosen month', async () => {
+    await api.insights('2026-08')
+    expect(requested).toEqual(['/api/insights?month=2026-08'])
+  })
+})

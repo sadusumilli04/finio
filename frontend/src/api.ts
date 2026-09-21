@@ -71,6 +71,38 @@ export type RecurringCharge = {
   next_expected: string
 }
 
+export type InsightRank = { position: number; of: number }
+export type InsightSummary = {
+  total: number
+  compared_with: string
+  previous_total: number
+  change: number
+  change_pct: number | null
+  typical_total: number | null
+  rank: InsightRank | null
+  projected_total: number | null
+}
+export type CategoryMover = { category: string; category_id: number; current: number; previous: number; change: number; change_pct: number | null }
+export type NewMerchant = { merchant: string; total: number; count: number }
+export type GrowingMerchant = { merchant: string; current: number; previous: number; change: number; change_pct: number | null }
+export type UnusualCharge = { transaction_id: number; date: string; merchant: string; category: string; amount: number; typical: number }
+export type SubscriptionKind = 'missing' | 'price_up' | 'price_down' | 'new'
+export type SubscriptionChange = { merchant: string; kind: SubscriptionKind; current: number | null; previous: number | null; expected_date: string | null }
+export type Insights = {
+  month: string
+  in_progress: boolean
+  as_of: string | null
+  days_elapsed: number
+  days_in_month: number
+  available_months: string[]
+  summary: InsightSummary
+  movers: { up: CategoryMover[]; down: CategoryMover[] }
+  new_merchants: NewMerchant[]
+  growing_merchants: GrowingMerchant[]
+  unusual_charges: UnusualCharge[]
+  subscriptions: SubscriptionChange[]
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, init)
   if (!res.ok) {
@@ -127,5 +159,6 @@ export const api = {
   trends: (f: Filters) => request<MonthTotal[]>(`/analytics/trends${toQueryString(f)}`),
   topMerchants: (f: Filters, opts: { limit?: number; sort?: MerchantSort } = {}) =>
     request<MerchantTotal[]>(`/analytics/top-merchants${toQueryString({ ...f, ...opts })}`),
+  insights: (month?: string) => request<Insights>(`/insights${toQueryString({ month })}`),
   recurring: (f: Filters) => request<RecurringCharge[]>(`/analytics/recurring${toQueryString(f)}`),
 }
