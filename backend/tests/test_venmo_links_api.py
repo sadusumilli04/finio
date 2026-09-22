@@ -68,3 +68,25 @@ def test_patch_share_refused_while_linked(client, conn, make_account):
     r = client.patch(f"/api/transactions/{c}", json={"my_share": 100})
     assert r.status_code == 400
     assert "Unlink the Venmo payments first" in r.json()["detail"]
+
+
+def test_patch_resending_unchanged_amount_direction_while_linked_succeeds(client, conn, make_account):
+    """Regression: the edit form always resends amount/direction on every save. Editing an unrelated
+    field on a linked, manually-entered charge must succeed as long as amount/direction don't change."""
+    card = make_account()
+    venmo = make_account(source="venmo_csv", name="Venmo", type="other")
+    c = insert_txn(conn, card, date="2026-09-10", amount=18000, merchant="Dinner Place",
+                   category="Restaurants", origin="manual")
+    p = insert_txn(conn, venmo, date="2026-09-11", amount=-4500, type="payment", merchant="Person One",
+                   description="dinner")
+    client.post(f"/api/transactions/{c}/venmo-links", json={"venmo_transaction_id": p})
+    cat = conn.execute("SELECT id FROM categories WHERE name = 'Shopping'").fetchone()["id"]
+
+    r = client.patch(f"/api/transactions/{c}", json={"amount": 18000, "direction": "expense", "category_id": cat})
+    assert r.status_code == 200
+    assert r.json()["category"] == "Shopping"
+    assert r.json()["my_share"] == 13500
+
+    r = client.patch(f"/api/transactions/{c}", json={"amount": 20000, "direction": "expense"})
+    assert r.status_code == 400
+    assert "Unlink the Venmo payments first" in r.json()["detail"]

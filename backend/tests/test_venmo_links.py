@@ -115,6 +115,28 @@ def test_manual_split_edits_refused_while_linked(conn, make_account):
     assert tx.get_transaction(conn, c)["my_share"] == 13500
 
 
+def test_resending_unchanged_amount_and_direction_while_linked_succeeds(conn, make_account):
+    """The edit form always resends amount and direction on every save; only an actual change to
+    amount/direction (or setting my_share at all) should be refused while linked."""
+    card, venmo = setup(conn, make_account)
+    c = charge(conn, card, origin="manual", amount=18000)
+    link_payment(conn, c, payin(conn, venmo))
+    cat = conn.execute("SELECT id FROM categories WHERE name = 'Shopping'").fetchone()["id"]
+
+    result = tx.update_transaction(
+        conn, c, {"amount": 18000, "direction": "expense", "category_id": cat}
+    )
+    assert result["category"] == "Shopping"
+    assert result["my_share"] == 13500
+    assert result["venmo_link_count"] == 1
+
+    with pytest.raises(ValidationFailed, match="Unlink the Venmo payments first"):
+        tx.update_transaction(conn, c, {"amount": 20000, "direction": "expense"})
+    with pytest.raises(ValidationFailed, match="Unlink the Venmo payments first"):
+        tx.update_transaction(conn, c, {"amount": 18000, "direction": "refund"})
+    assert tx.get_transaction(conn, c)["my_share"] == 13500
+
+
 def test_candidates_window_and_order(conn, make_account):
     card, venmo = setup(conn, make_account)
     other_card = make_account(name="Other")

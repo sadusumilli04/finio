@@ -57,6 +57,19 @@ def _require_category(conn: sqlite3.Connection, category_id: int) -> None:
 SHARE_FIELDS = {"category_id", "my_share"}
 
 
+def _would_change_linked_split(row, fields: dict) -> bool:
+    """Whether this patch would touch the derived share: explicitly setting my_share (any value),
+    or actually changing amount or direction (resending the same current value is not a change,
+    since the edit form always resends both)."""
+    if "my_share" in fields:
+        return True
+    if "amount" in fields and fields["amount"] != abs(row["amount"]):
+        return True
+    if "direction" in fields and fields["direction"] != TYPE_TO_DIRECTION.get(row["type"], "expense"):
+        return True
+    return False
+
+
 def _share_columns(row, my_share, source: str = "manual", *, new_type=None, new_amount=None) -> dict:
     """Column updates that set or clear the split, validated against the (possibly just-edited) charge."""
     if my_share is None:
@@ -113,7 +126,7 @@ def update_transaction(conn: sqlite3.Connection, transaction_id: int, fields: di
     row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
     if row is None:
         raise NotFoundError(f"Transaction {transaction_id} not found")
-    if {"my_share", "amount", "direction"} & set(fields):
+    if _would_change_linked_split(row, fields):
         from finio.services.venmo_links import is_linked
 
         if is_linked(conn, transaction_id):
