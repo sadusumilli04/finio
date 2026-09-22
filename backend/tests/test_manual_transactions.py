@@ -110,6 +110,27 @@ def test_delete_manual(client):
     assert client.delete(f"/api/transactions/{tid}").status_code == 404
 
 
+def test_delete_manual_charge_with_venmo_link_is_refused(client, conn, make_account):
+    from tests.helpers import insert_txn
+
+    acct = manual_account(client)
+    tid = create(client, acct).json()["id"]
+    venmo = make_account(source="venmo_csv", name="Venmo", type="other")
+    p = insert_txn(conn, venmo, date="2026-09-10", amount=-1000, type="payment", merchant="Person One")
+    link = client.post(f"/api/transactions/{tid}/venmo-links", json={"venmo_transaction_id": p})
+    assert link.status_code == 200, link.text
+
+    r = client.delete(f"/api/transactions/{tid}")
+    assert r.status_code == 400, r.text
+    assert "Unlink the Venmo payments first" in r.json()["detail"]
+    ids = [t["id"] for t in client.get("/api/transactions").json()["items"]]
+    assert tid in ids
+
+    unlink = client.delete(f"/api/transactions/{tid}/venmo-links/{p}")
+    assert unlink.status_code == 200, unlink.text
+    assert client.delete(f"/api/transactions/{tid}").status_code == 204
+
+
 def test_manual_category_survives_rule_reapply(client, conn):
     from finio.services.rules import reapply_rules
 

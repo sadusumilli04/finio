@@ -184,5 +184,9 @@ def delete_transaction(conn: sqlite3.Connection, transaction_id: int) -> None:
         raise NotFoundError(f"Transaction {transaction_id} not found")
     if row["origin"] == "import":
         raise ForbiddenError("Imported transactions cannot be deleted")
+    from finio.services.venmo_links import is_linked
+
+    if is_linked(conn, transaction_id):
+        raise ValidationFailed("Unlink the Venmo payments first")
     with conn:
         conn.execute("DELETE FROM transactions WHERE id = ?", (transaction_id,))
