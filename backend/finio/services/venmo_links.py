@@ -102,19 +102,24 @@ def link_payment(conn: sqlite3.Connection, charge_id: int, venmo_transaction_id:
 
     charge = _require_charge(conn, charge_id)
     payment = _require_payment(conn, venmo_transaction_id)
-    already = conn.execute(
-        "SELECT 1 FROM venmo_links WHERE venmo_transaction_id = ?", (venmo_transaction_id,)
-    ).fetchone()
-    if already is not None:
-        raise ConflictError("This Venmo payment is already linked")
-    total = _linked_total(conn, charge_id)
-    if total + abs(payment["amount"]) > charge["amount"]:
-        raise ValidationFailed("The linked payments would exceed the charge")
     with conn:
-        conn.execute(
-            "INSERT INTO venmo_links(venmo_transaction_id, card_transaction_id) VALUES (?, ?)",
-            (venmo_transaction_id, charge_id),
-        )
+        already = conn.execute(
+            "SELECT 1 FROM venmo_links WHERE venmo_transaction_id = ?", (venmo_transaction_id,)
+        ).fetchone()
+        if already is not None:
+            raise ConflictError("This Venmo payment is already linked")
+        total = _linked_total(conn, charge_id)
+        if total + abs(payment["amount"]) > charge["amount"]:
+            raise ValidationFailed("The linked payments would exceed the charge")
+        try:
+            conn.execute(
+                "INSERT INTO venmo_links(venmo_transaction_id, card_transaction_id) VALUES (?, ?)",
+                (venmo_transaction_id, charge_id),
+            )
+        except sqlite3.IntegrityError:
+            # A concurrent request linked this payment between our check above and this insert
+            # (venmo_transaction_id is the table's primary key).
+            raise ConflictError("This Venmo payment is already linked")
         recalculate_share(conn, charge_id)
     return get_transaction(conn, charge_id)
 
