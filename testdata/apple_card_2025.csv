@@ -1,0 +1,245 @@
+Transaction Date,Clearing Date,Description,Merchant,Category,Type,Amount (USD),Purchased By
+01/01/2025,01/02/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,30.67,Jordan Test
+01/02/2025,01/03/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,62.17,Alex Test
+01/03/2025,01/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Jordan Test
+01/04/2025,01/05/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,56.73,Alex Test
+01/04/2025,01/05/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,31.94,Alex Test
+01/05/2025,01/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Jordan Test
+01/08/2025,01/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,15.99,Alex Test
+01/12/2025,01/13/2025,WHOLE FOODS STORE #484,Whole Foods,Grocery,Purchase,133.34,Alex Test
+01/12/2025,01/13/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,54.57,Alex Test
+01/12/2025,01/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,141.41,Alex Test
+01/13/2025,01/14/2025,WHOLE FOODS STORE #510,Whole Foods,Grocery,Purchase,56.00,Alex Test
+01/17/2025,01/18/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,17.47,Alex Test
+01/17/2025,01/18/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,48.29,Jordan Test
+01/19/2025,01/20/2025,AMAZON.COM,Amazon,Shopping,Purchase,52.73,Jordan Test
+01/20/2025,01/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,153.56,Alex Test
+01/21/2025,01/22/2025,WHOLE FOODS STORE #957,Whole Foods,Grocery,Purchase,118.25,Alex Test
+01/25/2025,01/26/2025,WHOLE FOODS STORE #316,Whole Foods,Grocery,Purchase,101.52,Alex Test
+01/25/2025,01/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-712.80,Alex Test
+01/26/2025,01/27/2025,AMAZON.COM,Amazon,Shopping,Purchase,26.15,Jordan Test
+01/27/2025,01/28/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,53.64,Alex Test
+02/01/2025,02/02/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,19.74,Jordan Test
+02/03/2025,02/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Alex Test
+02/05/2025,02/06/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,63.77,Jordan Test
+02/05/2025,02/06/2025,AMAZON.COM,Amazon,Shopping,Purchase,29.11,Alex Test
+02/05/2025,02/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Alex Test
+02/06/2025,02/07/2025,SAFEWAY STORE #974,Safeway,Grocery,Purchase,85.86,Jordan Test
+02/07/2025,02/08/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,28.95,Alex Test
+02/08/2025,02/09/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,54.77,Jordan Test
+02/08/2025,02/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,15.99,Alex Test
+02/11/2025,02/12/2025,Ikea,Ikea,Shopping,Purchase,36.24,Alex Test
+02/12/2025,02/13/2025,SAFEWAY STORE #177,Safeway,Grocery,Purchase,131.38,Alex Test
+02/12/2025,02/13/2025,WHOLE FOODS STORE #847,Whole Foods,Grocery,Purchase,142.22,Alex Test
+02/12/2025,02/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,132.92,Jordan Test
+02/13/2025,02/14/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,40.12,Alex Test
+02/18/2025,02/19/2025,SAFEWAY STORE #381,Safeway,Grocery,Purchase,132.40,Alex Test
+02/19/2025,02/20/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,14.00,Jordan Test
+02/20/2025,02/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,152.91,Alex Test
+02/24/2025,02/25/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,44.88,Alex Test
+02/25/2025,02/26/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,24.38,Jordan Test
+02/25/2025,02/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-603.26,Jordan Test
+03/02/2025,03/03/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,12.59,Alex Test
+03/03/2025,03/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Alex Test
+03/05/2025,03/06/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,33.08,Alex Test
+03/05/2025,03/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Jordan Test
+03/06/2025,03/07/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,33.50,Jordan Test
+03/08/2025,03/09/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,24.09,Jordan Test
+03/08/2025,03/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,15.99,Jordan Test
+03/11/2025,03/12/2025,SAFEWAY STORE #220,Safeway,Grocery,Purchase,142.97,Alex Test
+03/12/2025,03/13/2025,SAFEWAY STORE #629,Safeway,Grocery,Purchase,117.90,Jordan Test
+03/12/2025,03/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,135.32,Alex Test
+03/20/2025,03/21/2025,COSTCO WHOLESALE STORE #537,Costco Wholesale,Grocery,Purchase,141.61,Jordan Test
+03/20/2025,03/21/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,39.55,Jordan Test
+03/20/2025,03/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,96.76,Jordan Test
+03/21/2025,03/22/2025,AMAZON.COM,Amazon,Shopping,Purchase,19.45,Jordan Test
+03/22/2025,03/23/2025,AMAZON.COM,Amazon,Shopping,Purchase,36.44,Jordan Test
+03/22/2025,03/23/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,43.02,Alex Test
+03/23/2025,03/24/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,54.10,Alex Test
+03/23/2025,03/24/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,61.72,Jordan Test
+03/25/2025,03/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-781.25,Alex Test
+03/31/2025,03/31/2025,SAFEWAY STORE #168,Safeway,Grocery,Purchase,64.46,Jordan Test
+04/02/2025,04/03/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,12.95,Alex Test
+04/03/2025,04/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Jordan Test
+04/05/2025,04/06/2025,SHELL FUEL,Shell,Transportation,Purchase,55.08,Alex Test
+04/05/2025,04/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Jordan Test
+04/06/2025,04/07/2025,AMAZON.COM,Amazon,Shopping,Purchase,84.95,Jordan Test
+04/08/2025,04/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,15.99,Alex Test
+04/10/2025,04/11/2025,Ikea,Ikea,Shopping,Purchase,39.84,Jordan Test
+04/11/2025,04/12/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,42.03,Alex Test
+04/12/2025,04/13/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,33.10,Jordan Test
+04/12/2025,04/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,137.75,Jordan Test
+04/14/2025,04/15/2025,SAFEWAY STORE #150,Safeway,Grocery,Purchase,54.54,Jordan Test
+04/18/2025,04/19/2025,COSTCO WHOLESALE STORE #478,Costco Wholesale,Grocery,Purchase,54.97,Jordan Test
+04/18/2025,04/19/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,49.65,Jordan Test
+04/20/2025,04/21/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,44.52,Alex Test
+04/20/2025,04/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,82.56,Alex Test
+04/22/2025,04/23/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,52.01,Alex Test
+04/25/2025,04/26/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,37.93,Jordan Test
+04/25/2025,04/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-677.62,Alex Test
+04/26/2025,04/27/2025,WHOLE FOODS STORE #202,Whole Foods,Grocery,Purchase,125.98,Jordan Test
+04/27/2025,04/28/2025,WHOLE FOODS STORE #774,Whole Foods,Grocery,Purchase,104.06,Jordan Test
+05/03/2025,05/04/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,23.40,Alex Test
+05/03/2025,05/04/2025,SHELL FUEL,Shell,Transportation,Purchase,61.76,Jordan Test
+05/03/2025,05/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Alex Test
+05/05/2025,05/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Alex Test
+05/07/2025,05/08/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,40.80,Alex Test
+05/07/2025,05/08/2025,AMAZON.COM,Amazon,Shopping,Purchase,27.59,Jordan Test
+05/07/2025,05/08/2025,SHELL FUEL,Shell,Transportation,Purchase,60.81,Alex Test
+05/08/2025,05/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,15.99,Jordan Test
+05/10/2025,05/11/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,44.03,Alex Test
+05/10/2025,05/11/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,63.72,Alex Test
+05/12/2025,05/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,134.42,Jordan Test
+05/17/2025,05/18/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,22.06,Jordan Test
+05/19/2025,05/20/2025,Ikea,Ikea,Shopping,Purchase,27.21,Alex Test
+05/20/2025,05/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,95.32,Alex Test
+05/21/2025,05/22/2025,COSTCO WHOLESALE STORE #742,Costco Wholesale,Grocery,Purchase,75.69,Alex Test
+05/24/2025,05/25/2025,COSTCO WHOLESALE STORE #387,Costco Wholesale,Grocery,Purchase,64.14,Alex Test
+05/25/2025,05/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-654.73,Jordan Test
+05/27/2025,05/28/2025,SAFEWAY STORE #377,Safeway,Grocery,Purchase,79.09,Alex Test
+05/27/2025,05/28/2025,COSTCO WHOLESALE STORE #643,Costco Wholesale,Grocery,Purchase,130.75,Alex Test
+05/29/2025,05/30/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,36.51,Alex Test
+06/03/2025,06/04/2025,Target,Target,Shopping,Purchase,83.68,Jordan Test
+06/03/2025,06/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Alex Test
+06/05/2025,06/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Alex Test
+06/06/2025,06/07/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,21.28,Jordan Test
+06/08/2025,06/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,15.99,Jordan Test
+06/11/2025,06/12/2025,SAFEWAY STORE #905,Safeway,Grocery,Purchase,144.68,Alex Test
+06/11/2025,06/12/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,35.58,Alex Test
+06/12/2025,06/13/2025,COSTCO WHOLESALE STORE #545,Costco Wholesale,Grocery,Purchase,45.46,Alex Test
+06/12/2025,06/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,138.89,Jordan Test
+06/15/2025,06/16/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,22.50,Alex Test
+06/17/2025,06/18/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,45.91,Jordan Test
+06/17/2025,06/18/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,32.91,Alex Test
+06/19/2025,06/20/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,56.06,Alex Test
+06/19/2025,06/20/2025,AMAZON.COM,Amazon,Shopping,Purchase,16.53,Alex Test
+06/20/2025,06/21/2025,TRADER JOE'S STORE #324,Trader Joe's,Grocery,Purchase,89.91,Alex Test
+06/20/2025,06/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,102.05,Jordan Test
+06/21/2025,06/22/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,21.52,Jordan Test
+06/25/2025,06/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-899.11,Jordan Test
+06/27/2025,06/28/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,39.63,Jordan Test
+06/30/2025,06/30/2025,TRADER JOE'S STORE #221,Trader Joe's,Grocery,Purchase,144.22,Alex Test
+07/02/2025,07/03/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,22.57,Jordan Test
+07/03/2025,07/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Jordan Test
+07/04/2025,07/05/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,20.17,Jordan Test
+07/05/2025,07/06/2025,Ikea,Ikea,Shopping,Purchase,80.25,Jordan Test
+07/05/2025,07/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Jordan Test
+07/06/2025,07/07/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,27.71,Alex Test
+07/06/2025,07/07/2025,Target,Target,Shopping,Purchase,45.45,Jordan Test
+07/08/2025,07/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,17.99,Jordan Test
+07/12/2025,07/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,139.49,Alex Test
+07/16/2025,07/17/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,21.90,Jordan Test
+07/17/2025,07/18/2025,RAMEN HOUSE,Ramen House,Restaurants,Purchase,47.51,Alex Test
+07/19/2025,07/20/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,47.31,Jordan Test
+07/20/2025,07/21/2025,TRADER JOE'S STORE #857,Trader Joe's,Grocery,Purchase,59.64,Alex Test
+07/20/2025,07/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,146.55,Jordan Test
+07/22/2025,07/23/2025,SHELL FUEL,Shell,Transportation,Purchase,54.46,Alex Test
+07/23/2025,07/24/2025,COSTCO WHOLESALE STORE #290,Costco Wholesale,Grocery,Purchase,136.22,Alex Test
+07/23/2025,07/24/2025,TRADER JOE'S STORE #319,Trader Joe's,Grocery,Purchase,92.17,Alex Test
+07/25/2025,07/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-860.89,Alex Test
+07/27/2025,07/28/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,42.56,Alex Test
+07/28/2025,07/29/2025,SAFEWAY STORE #917,Safeway,Grocery,Purchase,145.22,Alex Test
+08/05/2025,08/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Jordan Test
+08/08/2025,08/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,17.99,Alex Test
+08/09/2025,08/10/2025,WHOLE FOODS STORE #933,Whole Foods,Grocery,Purchase,89.49,Jordan Test
+08/10/2025,08/11/2025,RAMEN HOUSE,Ramen House,Restaurants,Purchase,45.66,Jordan Test
+08/12/2025,08/13/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,49.21,Alex Test
+08/12/2025,08/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,128.89,Jordan Test
+08/13/2025,08/14/2025,SHELL FUEL,Shell,Transportation,Purchase,58.85,Jordan Test
+08/14/2025,08/15/2025,SAFEWAY STORE #242,Safeway,Grocery,Purchase,45.26,Jordan Test
+08/14/2025,08/15/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,19.32,Alex Test
+08/15/2025,08/16/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,20.97,Jordan Test
+08/17/2025,08/18/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,24.93,Jordan Test
+08/20/2025,08/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,149.68,Alex Test
+08/21/2025,08/22/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,47.85,Jordan Test
+08/22/2025,08/23/2025,TRADER JOE'S STORE #265,Trader Joe's,Grocery,Purchase,85.99,Alex Test
+08/22/2025,08/23/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,39.31,Alex Test
+08/22/2025,08/23/2025,Target,Target,Shopping,Purchase,15.68,Jordan Test
+08/25/2025,08/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-616.85,Jordan Test
+08/29/2025,08/30/2025,AMAZON.COM,Amazon,Shopping,Purchase,49.03,Alex Test
+08/30/2025,08/31/2025,SAFEWAY STORE #363,Safeway,Grocery,Purchase,46.44,Alex Test
+09/01/2025,09/02/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,37.47,Alex Test
+09/03/2025,09/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Jordan Test
+09/04/2025,09/05/2025,WHOLE FOODS STORE #975,Whole Foods,Grocery,Purchase,77.71,Alex Test
+09/05/2025,09/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Alex Test
+09/06/2025,09/07/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,55.51,Jordan Test
+09/08/2025,09/09/2025,COSTCO WHOLESALE STORE #236,Costco Wholesale,Grocery,Purchase,105.99,Jordan Test
+09/08/2025,09/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,17.99,Alex Test
+09/11/2025,09/12/2025,SAFEWAY STORE #580,Safeway,Grocery,Purchase,117.71,Alex Test
+09/12/2025,09/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,134.40,Alex Test
+09/13/2025,09/14/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,55.66,Alex Test
+09/13/2025,09/14/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,28.24,Jordan Test
+09/14/2025,09/15/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,56.51,Jordan Test
+09/17/2025,09/18/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,31.78,Jordan Test
+09/19/2025,09/20/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,52.43,Jordan Test
+09/19/2025,09/20/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,54.86,Alex Test
+09/20/2025,09/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,82.21,Jordan Test
+09/22/2025,09/23/2025,Target,Target,Shopping,Purchase,58.96,Alex Test
+09/22/2025,09/23/2025,Target,Target,Shopping,Purchase,30.27,Alex Test
+09/25/2025,09/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-828.16,Alex Test
+09/30/2025,09/30/2025,SAFEWAY STORE #924,Safeway,Grocery,Purchase,116.66,Alex Test
+10/03/2025,10/04/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,41.04,Alex Test
+10/03/2025,10/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Jordan Test
+10/04/2025,10/05/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,16.08,Alex Test
+10/05/2025,10/06/2025,SAFEWAY STORE #542,Safeway,Grocery,Purchase,69.51,Jordan Test
+10/05/2025,10/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Alex Test
+10/07/2025,10/08/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,32.00,Jordan Test
+10/08/2025,10/09/2025,SAFEWAY STORE #608,Safeway,Grocery,Purchase,95.56,Jordan Test
+10/08/2025,10/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,17.99,Jordan Test
+10/11/2025,10/12/2025,SAFEWAY STORE #582,Safeway,Grocery,Purchase,86.76,Jordan Test
+10/11/2025,10/12/2025,Ikea,Ikea,Shopping,Purchase,15.78,Alex Test
+10/12/2025,10/13/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,60.55,Alex Test
+10/12/2025,10/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,134.92,Alex Test
+10/13/2025,10/14/2025,SHELL FUEL,Shell,Transportation,Purchase,48.11,Alex Test
+10/18/2025,10/19/2025,WHOLE FOODS STORE #397,Whole Foods,Grocery,Purchase,101.70,Jordan Test
+10/18/2025,10/19/2025,AMAZON.COM,Amazon,Shopping,Purchase,28.80,Alex Test
+10/20/2025,10/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,83.64,Jordan Test
+10/21/2025,10/22/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,46.42,Alex Test
+10/25/2025,10/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-720.72,Alex Test
+10/26/2025,10/27/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,40.63,Alex Test
+10/28/2025,10/29/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,17.83,Alex Test
+11/01/2025,11/02/2025,TRADER JOE'S STORE #545,Trader Joe's,Grocery,Purchase,145.92,Alex Test
+11/03/2025,11/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Alex Test
+11/04/2025,11/05/2025,SAFEWAY STORE #362,Safeway,Grocery,Purchase,64.56,Jordan Test
+11/04/2025,11/05/2025,AMAZON.COM,Amazon,Shopping,Purchase,39.46,Alex Test
+11/05/2025,11/06/2025,SAFEWAY STORE #920,Safeway,Grocery,Purchase,139.07,Jordan Test
+11/05/2025,11/06/2025,BEST BUY #4021,Best Buy,Shopping,Purchase,1199.00,Alex Test
+11/05/2025,11/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Alex Test
+11/06/2025,11/07/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,56.37,Jordan Test
+11/08/2025,11/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,17.99,Alex Test
+11/10/2025,11/11/2025,Target,Target,Shopping,Purchase,86.09,Alex Test
+11/12/2025,11/13/2025,SHELL FUEL,Shell,Transportation,Purchase,49.66,Alex Test
+11/12/2025,11/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,129.79,Jordan Test
+11/14/2025,11/15/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,30.25,Alex Test
+11/16/2025,11/17/2025,RAMEN HOUSE,Ramen House,Restaurants,Purchase,60.35,Alex Test
+11/18/2025,11/19/2025,SAFEWAY STORE #549,Safeway,Grocery,Purchase,137.92,Jordan Test
+11/18/2025,11/19/2025,Target,Target,Shopping,Purchase,59.32,Alex Test
+11/19/2025,11/20/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,47.13,Alex Test
+11/20/2025,11/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,98.68,Alex Test
+11/22/2025,11/23/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,39.97,Alex Test
+11/24/2025,11/25/2025,CORNER COFFEE SHOP,Corner Coffee Shop,Restaurants,Purchase,44.73,Alex Test
+11/25/2025,11/26/2025,Target,Target,Shopping,Purchase,77.95,Jordan Test
+11/25/2025,11/26/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,47.81,Jordan Test
+11/25/2025,11/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-850.18,Alex Test
+12/01/2025,12/02/2025,CHEVRON FUEL,Chevron,Transportation,Purchase,58.74,Alex Test
+12/03/2025,12/04/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,44.85,Alex Test
+12/03/2025,12/04/2025,FIT LIFE GYM MEMBERSHIP,Fit Life Gym,Entertainment,Purchase,45.00,Alex Test
+12/04/2025,12/05/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,18.93,Alex Test
+12/05/2025,12/06/2025,SPOTIFY USA,Spotify,Entertainment,Purchase,9.99,Alex Test
+12/07/2025,12/08/2025,WHOLE FOODS STORE #958,Whole Foods,Grocery,Purchase,119.36,Jordan Test
+12/08/2025,12/09/2025,AMAZON.COM,Amazon,Shopping,Purchase,63.85,Jordan Test
+12/08/2025,12/09/2025,NETFLIX.COM LOS GATOS CA,Netflix,Entertainment,Purchase,17.99,Jordan Test
+12/09/2025,12/10/2025,CHIPOTLE,Chipotle,Restaurants,Purchase,29.11,Jordan Test
+12/09/2025,12/10/2025,AMAZON.COM,Amazon,Shopping,Purchase,83.40,Alex Test
+12/12/2025,12/13/2025,WHOLE FOODS STORE #531,Whole Foods,Grocery,Purchase,88.78,Alex Test
+12/12/2025,12/13/2025,ACME AUTO INSURANCE,Acme Auto Insurance,Insurance,Purchase,131.30,Jordan Test
+12/13/2025,12/14/2025,AMAZON.COM,Amazon,Shopping,Purchase,64.41,Jordan Test
+12/15/2025,12/16/2025,WHOLE FOODS STORE #187,Whole Foods,Grocery,Purchase,133.03,Alex Test
+12/16/2025,12/17/2025,WHOLE FOODS STORE #647,Whole Foods,Grocery,Purchase,40.70,Jordan Test
+12/17/2025,12/18/2025,PIZZA PALACE,Pizza Palace,Restaurants,Purchase,61.55,Alex Test
+12/20/2025,12/21/2025,SUSHI PLACE,Sushi Place,Restaurants,Purchase,57.85,Alex Test
+12/20/2025,12/21/2025,CITY POWER & UTILITY,City Power & Utility,Utilities,Purchase,158.89,Jordan Test
+12/25/2025,12/26/2025,ACH DEPOSIT INTERNET TRANSFER,Payment,Payment,Payment,-706.16,Alex Test
+12/26/2025,12/27/2025,AMAZON.COM,Amazon,Shopping,Purchase,22.51,Jordan Test
+12/29/2025,12/30/2025,SHELL FUEL,Shell,Transportation,Purchase,57.18,Jordan Test
+12/31/2025,12/31/2025,LOCAL BISTRO,Local Bistro,Restaurants,Purchase,46.22,Alex Test

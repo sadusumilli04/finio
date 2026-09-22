@@ -10,6 +10,7 @@ backend/data/
 .DS_Store
 *.csv
 !backend/tests/fixtures/*.csv
+!testdata/*.csv
 *.egg-info/
 .superpowers/
 .claude/worktrees/

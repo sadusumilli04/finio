@@ -42,6 +42,10 @@ The database is created at `backend/data/finio.sqlite3` (override with `FINIO_DB
 5. **Split a group charge**: open a purchase's ⋯ menu and choose Split… to enter what you actually spent (or split evenly among N people). Only your share counts on the Dashboard; the full charge stays on the transaction.
 6. **Insights**: pick a month to see how it compares with the previous one, what changed, and what looks unusual. It needs at least two months of data to say much.
 
+## Try it with sample data
+
+`testdata/` has a year of fabricated statements (Jan-Dec 2025) for both sources, for trying the app without your own data: create one account with source "Apple Card CSV import" and one with "Venmo CSV import", then import `testdata/apple_card_2025.csv` and `testdata/venmo_2025.csv` respectively. It has enough spread to show something on the Dashboard, Recurring and Insights pages, including a subscription price change, a missing month, a new merchant and an unusual charge.
+
 ## Test
 
 ```bash
