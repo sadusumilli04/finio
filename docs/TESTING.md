@@ -6,6 +6,8 @@ Commands are for macOS and Linux. On Windows, adjust the paths (`.venv\Scripts\.
 
 > **Use only the fabricated sample data.** Finio is built for real bank statements, and real financial data must never go into this repo, an issue, or a screenshot. Everything below uses `backend/tests/fixtures/apple_sample.csv` or the small made-up Venmo file given in the Venmo walkthrough.
 
+**Fastest option:** if you just want to click around a populated app and skip all of the setup below, run `docker compose up --build` from the repo root and open http://localhost:8000 — it starts pre-seeded with a year of fabricated sample data. It doesn't run the automated test suites or exercise a fresh import, though, so for the rest of this guide (and to report bugs) use the steps below.
+
 ## What you need
 
 - Git

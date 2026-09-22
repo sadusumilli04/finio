@@ -29,6 +29,11 @@ Node here is 22.11, so `vite` ^6, `@vitejs/plugin-react` ^4 and `vitest` ^3 are 
 
 The database is `backend/data/finio.sqlite3` (override with the `FINIO_DB` env var).
 
+Docker (optional, a zero-install demo, not used for local development):
+```bash
+docker compose up --build   # http://localhost:8000, pre-seeded from testdata/
+```
+
 ## Architecture
 
 Layered backend: importers -> services -> FastAPI routes; the React UI calls only `/api`.
@@ -39,6 +44,7 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 - `backend/finio/api/`: routers, all mounted under `/api` in `app.py`. Domain errors from `finio/errors.py` (`NotFoundError` 404, `ForbiddenError` 403, `ConflictError` 409, `ValidationFailed` 400) are mapped to HTTP responses centrally; raise them from services instead of using `HTTPException`.
 - `backend/finio/db.py`: stdlib `sqlite3` with the schema inline, no ORM; schema version tracked in `PRAGMA user_version`; `_migrate` upgrades existing databases (currently to version 2). Connections are per request (`deps.get_conn`).
 - `frontend/src/api.ts`: the only place that talks to the backend; pages live in `src/pages/`.
+- `backend/finio/services/demo_data.py`: seeds a brand-new database from `testdata/` when `FINIO_SEED_DEMO_DATA=1` (set only by `docker-compose.yml`); a no-op once any account exists. `app.py` also serves the built frontend (`frontend/dist`) from the same origin as the API when that directory exists, which is only true inside the Docker image — local dev keeps using the Vite dev server, and the browser UI is still just one client of the API.
 
 ## Conventions and invariants
 

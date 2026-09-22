@@ -4,6 +4,18 @@ A local, private Mint-style analyzer for Apple Card transactions. Import monthly
 
 Design docs: [docs/SPECIFICATION.md](docs/SPECIFICATION.md), [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md), [docs/TASK.md](docs/TASK.md).
 
+## Quick start with Docker
+
+No Python or Node install needed:
+
+```bash
+docker compose up --build
+```
+
+Open http://localhost:8000. It starts pre-seeded with a year of fabricated sample data (the same CSVs as `testdata/`), so the Dashboard, Recurring and Insights pages already have something to show. Data lives in a Docker volume, separate from `backend/data/finio.sqlite3`; `docker compose down -v` removes it to start fresh.
+
+For local development (hot reload, running the test suites), use Setup and Run below instead.
+
 ## Setup
 
 ```bash
@@ -45,7 +57,7 @@ The database is created at `backend/data/finio.sqlite3` (override with `FINIO_DB
 
 ## Try it with sample data
 
-`testdata/` has a year of fabricated statements (Jan-Dec 2025) for both sources, for trying the app without your own data: create one account with source "Apple Card CSV import" and one with "Venmo CSV import", then import `testdata/apple_card_2025.csv` and `testdata/venmo_2025.csv` respectively. It has enough spread to show something on the Dashboard, Recurring and Insights pages, including a subscription price change, a missing month, a new merchant and an unusual charge.
+`testdata/` has a year of fabricated statements (Jan-Dec 2025) for both sources, for trying the app without your own data. The Docker quick start above imports these automatically; running the dev servers locally instead, create one account with source "Apple Card CSV import" and one with "Venmo CSV import", then import `testdata/apple_card_2025.csv` and `testdata/venmo_2025.csv` respectively. It has enough spread to show something on the Dashboard, Recurring and Insights pages, including a subscription price change, a missing month, a new merchant and an unusual charge.
 
 ## Test
 

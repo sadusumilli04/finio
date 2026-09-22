@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # bound to localhost only, same as the non-Docker "keep it off the LAN" guidance in README.md
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - finio-data:/app/data
+
+volumes:
+  finio-data:
