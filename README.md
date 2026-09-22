@@ -54,7 +54,7 @@ cd backend && .venv/bin/pytest
 cd ../frontend && npm test
 ```
 
-Never commit real statements: `*.csv` is git-ignored except `backend/tests/fixtures/`, which holds fabricated rows only.
+Never commit real statements: `*.csv` is git-ignored except `backend/tests/fixtures/` and `testdata/`, which hold fabricated rows only.
 
 ## Known limitations
 

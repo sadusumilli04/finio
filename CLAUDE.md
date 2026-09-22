@@ -62,7 +62,7 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 
 ## Data safety
 
-Never commit real financial data. `*.csv` is git-ignored except `backend/tests/fixtures/`. Do not read or copy the user's real statement exports (for example from `~/Downloads`) into the repo, fixtures, or commit messages.
+Never commit real financial data. `*.csv` is git-ignored except `backend/tests/fixtures/` and `testdata/`. Do not read or copy the user's real statement exports (for example from `~/Downloads`) into the repo, fixtures, or commit messages.
 
 ## Out of scope for v1
 
