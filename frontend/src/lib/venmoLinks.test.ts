@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { linkSummary, shareAfterLinks, wouldExceed } from './venmoLinks'
+import { describe, expect, it, vi } from 'vitest'
+import { linkSummary, runLinkAction, shareAfterLinks, wouldExceed } from './venmoLinks'
 
 describe('shareAfterLinks', () => {
   it('subtracts the reimbursed payments from the charge', () => {
@@ -37,5 +37,40 @@ describe('linkSummary', () => {
   })
   it('never shows a share below zero', () => {
     expect(linkSummary(10000, [6000, 6000])).toBe('Your share: $0.00 of $100.00')
+  })
+})
+
+describe('runLinkAction', () => {
+  it('reports the result via onSuccess and never calls onError or reload', async () => {
+    const onSuccess = vi.fn()
+    const onError = vi.fn()
+    const reload = vi.fn()
+    await runLinkAction(() => Promise.resolve('ok'), { onSuccess, onError, reload })
+    expect(onSuccess).toHaveBeenCalledWith('ok')
+    expect(onError).not.toHaveBeenCalled()
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('regression: on a stale-row error (409/400/404), reports the error AND reloads, so a stale '
+    + 'candidate/link row does not keep failing silently until the panel is reopened', async () => {
+    const onSuccess = vi.fn()
+    const onError = vi.fn()
+    const reload = vi.fn()
+    await runLinkAction(() => Promise.reject(new Error('This Venmo payment is already linked')), {
+      onSuccess,
+      onError,
+      reload,
+    })
+    expect(onSuccess).not.toHaveBeenCalled()
+    expect(onError).toHaveBeenCalledWith('This Venmo payment is already linked')
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('stringifies a non-Error rejection for onError', async () => {
+    const onError = vi.fn()
+    const reload = vi.fn()
+    await runLinkAction(() => Promise.reject('boom'), { onSuccess: vi.fn(), onError, reload })
+    expect(onError).toHaveBeenCalledWith('boom')
+    expect(reload).toHaveBeenCalledTimes(1)
   })
 })

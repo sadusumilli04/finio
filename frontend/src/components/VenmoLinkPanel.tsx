@@ -3,11 +3,9 @@ import { api, type Transaction, type VenmoPayment } from '../api'
 import { shortDate } from '../lib/date'
 import { formatCents } from '../lib/money'
 import { useFetch } from '../lib/useFetch'
-import { linkSummary, wouldExceed } from '../lib/venmoLinks'
+import { linkSummary, runLinkAction, wouldExceed } from '../lib/venmoLinks'
 
 type Props = { transaction: Transaction; onDone: (updated: Transaction) => void; onCancel: () => void }
-
-const messageOf = (err: unknown) => (err instanceof Error ? err.message : String(err))
 
 export default function VenmoLinkPanel({ transaction: t, onDone, onCancel }: Props) {
   const links = useFetch(() => api.venmoLinks(t.id), [t.id])
@@ -20,34 +18,37 @@ export default function VenmoLinkPanel({ transaction: t, onDone, onCancel }: Pro
   const loadError = links.error ?? candidates.error
   const busy = busyId !== null
 
+  function reloadLists() {
+    links.reload()
+    candidates.reload()
+  }
+
   async function link(payment: VenmoPayment) {
     setActionError(null)
     setBusyId(payment.id)
-    try {
-      const updated = await api.linkVenmo(t.id, payment.id)
-      onDone(updated)
-      links.reload()
-      candidates.reload()
-    } catch (err) {
-      setActionError(messageOf(err))
-    } finally {
-      setBusyId(null)
-    }
+    await runLinkAction(() => api.linkVenmo(t.id, payment.id), {
+      onSuccess: (updated) => {
+        onDone(updated)
+        reloadLists()
+      },
+      onError: setActionError,
+      reload: reloadLists,
+    })
+    setBusyId(null)
   }
 
   async function unlink(payment: VenmoPayment) {
     setActionError(null)
     setBusyId(payment.id)
-    try {
-      const updated = await api.unlinkVenmo(t.id, payment.id)
-      onDone(updated)
-      links.reload()
-      candidates.reload()
-    } catch (err) {
-      setActionError(messageOf(err))
-    } finally {
-      setBusyId(null)
-    }
+    await runLinkAction(() => api.unlinkVenmo(t.id, payment.id), {
+      onSuccess: (updated) => {
+        onDone(updated)
+        reloadLists()
+      },
+      onError: setActionError,
+      reload: reloadLists,
+    })
+    setBusyId(null)
   }
 
   return (
