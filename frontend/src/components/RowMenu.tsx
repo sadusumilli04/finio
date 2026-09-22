@@ -51,6 +51,9 @@ export default function RowMenu({ label, items }: Props) {
               className={item.danger ? 'danger' : undefined}
               onClick={() => {
                 setOpen(false)
+                // Whatever the action opens (a panel) or reports (a notice or error) renders near
+                // the top of the page, so bring it into view instead of leaving the user scrolled down.
+                window.scrollTo({ top: 0, behavior: 'smooth' })
                 item.onSelect()
               }}
             >
