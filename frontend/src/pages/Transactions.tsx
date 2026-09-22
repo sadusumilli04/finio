@@ -5,6 +5,7 @@ import AddTransactionForm from '../components/AddTransactionForm'
 import FilterBar from '../components/FilterBar'
 import RowMenu from '../components/RowMenu'
 import SplitPanel from '../components/SplitPanel'
+import VenmoLinkPanel from '../components/VenmoLinkPanel'
 import { amountBounds } from '../lib/amountBounds'
 import { categoryColor } from '../lib/categoryColor'
 import { shortDate } from '../lib/date'
@@ -28,6 +29,7 @@ export default function Transactions() {
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [splitting, setSplitting] = useState<Transaction | null>(null)
+  const [linking, setLinking] = useState<Transaction | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   // Rows just recategorized stay visible (highlighted) even if the active filters no longer match them,
@@ -138,6 +140,8 @@ export default function Transactions() {
   }
 
   const merged = txns.data ? mergePinned(txns.data.items, pinned) : null
+  const accountsById = new Map((accounts.data ?? []).map((a) => [a.id, a]))
+  const chargesById = new Map((merged?.rows ?? []).map((t) => [t.id, t]))
   const total = txns.data?.total ?? 0
   const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1)
   const firstShown = total === 0 ? 0 : page * PAGE_SIZE + 1
@@ -147,7 +151,7 @@ export default function Transactions() {
     <section className="txn-page">
       <header className="txn-head">
         <h1>Transactions</h1>
-        <button type="button" className="btn btn-primary" onClick={() => { setAdding(true); setEditing(null); setSplitting(null) }}>
+        <button type="button" className="btn btn-primary" onClick={() => { setAdding(true); setEditing(null); setSplitting(null); setLinking(null) }}>
           Add transaction
         </button>
       </header>
@@ -248,6 +252,19 @@ export default function Transactions() {
         />
       )}
 
+      {linking && (
+        <VenmoLinkPanel
+          key={linking.id}
+          transaction={linking}
+          onCancel={() => setLinking(null)}
+          onDone={(updated) => {
+            setLinking(updated)
+            setPinned((prev) => replacePinned(prev, updated))
+            txns.reload()
+          }}
+        />
+      )}
+
       {notice && <p className="muted">{notice}</p>}
       {actionError && <p className="error">{actionError}</p>}
       {txns.error && <p className="error">{txns.error}</p>}
@@ -267,63 +284,78 @@ export default function Transactions() {
               </tr>
             </thead>
             <tbody>
-              {merged?.rows.map((t) => (
-                <tr key={t.id} className={merged.recentIds.has(t.id) ? 'recent' : undefined}>
-                  <td className="cell-date">{shortDate(t.transaction_date)}</td>
-                  <td className="cell-merchant">
-                    <div className="merchant-cell">
-                      <span className="dot" style={{ background: categoryColor(t.category_id, t.category) }} aria-hidden="true" />
-                      <span className="merchant-text">
-                        <span className="merchant-name" title={t.description}>{t.merchant}</span>
-                        <span className="merchant-sub">
-                          {t.account_name}
-                          {t.cardholder ? ` · ${t.cardholder}` : ''}
+              {merged?.rows.map((t) => {
+                const acct = accountsById.get(t.account_id)
+                const canLinkVenmo = t.type === 'purchase' && acct !== undefined && acct.source !== 'venmo_csv'
+                return (
+                  <tr key={t.id} className={merged.recentIds.has(t.id) ? 'recent' : undefined}>
+                    <td className="cell-date">{shortDate(t.transaction_date)}</td>
+                    <td className="cell-merchant">
+                      <div className="merchant-cell">
+                        <span className="dot" style={{ background: categoryColor(t.category_id, t.category) }} aria-hidden="true" />
+                        <span className="merchant-text">
+                          <span className="merchant-name" title={t.description}>
+                            {t.merchant}
+                            {t.venmo_link_count > 0 && <span className="venmo-tag">Venmo-linked</span>}
+                            {t.venmo_linked_to !== null && (
+                              <span className="venmo-tag">
+                                linked to {chargesById.get(t.venmo_linked_to)?.merchant ?? 'a charge'}
+                              </span>
+                            )}
+                          </span>
+                          <span className="merchant-sub">
+                            {t.account_name}
+                            {t.cardholder ? ` · ${t.cardholder}` : ''}
+                          </span>
                         </span>
-                      </span>
-                    </div>
-                  </td>
-                  <td className="cell-category">
-                    <select
-                      className="category-select"
-                      aria-label={`Category for ${t.merchant}`}
-                      value={t.category_id}
-                      onChange={(e) => void recategorize(t, Number(e.target.value))}
-                    >
-                      {categories.data?.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className={`num cell-amount ${t.effective_amount < 0 ? 'neg' : ''}`}>
-                    {formatCents(t.effective_amount)}
-                    {t.my_share !== null && <span className="amount-of">of {formatCents(t.amount)}</span>}
-                  </td>
-                  <td className="cell-actions">
-                    <RowMenu
-                      label={`Actions for ${t.merchant}`}
-                      items={[
-                        ...(t.type === 'purchase'
-                          ? t.my_share === null
-                            ? [{ label: 'Split…', onSelect: () => { setSplitting(t); setAdding(false); setEditing(null) } }]
-                            : [
-                                { label: 'Edit split…', onSelect: () => { setSplitting(t); setAdding(false); setEditing(null) } },
-                                { label: 'Remove split', onSelect: () => void removeSplit(t) },
+                      </div>
+                    </td>
+                    <td className="cell-category">
+                      <select
+                        className="category-select"
+                        aria-label={`Category for ${t.merchant}`}
+                        value={t.category_id}
+                        onChange={(e) => void recategorize(t, Number(e.target.value))}
+                      >
+                        {categories.data?.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className={`num cell-amount ${t.effective_amount < 0 ? 'neg' : ''}`}>
+                      {formatCents(t.effective_amount)}
+                      {t.my_share !== null && <span className="amount-of">of {formatCents(t.amount)}</span>}
+                    </td>
+                    <td className="cell-actions">
+                      <RowMenu
+                        label={`Actions for ${t.merchant}`}
+                        items={[
+                          ...(t.type === 'purchase'
+                            ? t.my_share === null
+                              ? [{ label: 'Split…', onSelect: () => { setSplitting(t); setAdding(false); setEditing(null); setLinking(null) } }]
+                              : [
+                                  { label: 'Edit split…', onSelect: () => { setSplitting(t); setAdding(false); setEditing(null); setLinking(null) } },
+                                  { label: 'Remove split', onSelect: () => void removeSplit(t) },
+                                ]
+                            : []),
+                          ...(canLinkVenmo
+                            ? [{ label: 'Link Venmo payments…', onSelect: () => { setLinking(t); setAdding(false); setEditing(null); setSplitting(null) } }]
+                            : []),
+                          { label: 'Make rule', onSelect: () => void makeRule(t) },
+                          ...(t.origin === 'manual'
+                            ? [
+                                { label: 'Edit', onSelect: () => { setEditing(t); setAdding(false); setSplitting(null); setLinking(null) } },
+                                { label: 'Delete', onSelect: () => void remove(t), danger: true },
                               ]
-                          : []),
-                        { label: 'Make rule', onSelect: () => void makeRule(t) },
-                        ...(t.origin === 'manual'
-                          ? [
-                              { label: 'Edit', onSelect: () => { setEditing(t); setAdding(false); setSplitting(null) } },
-                              { label: 'Delete', onSelect: () => void remove(t), danger: true },
-                            ]
-                          : []),
-                      ]}
-                    />
-                  </td>
-                </tr>
-              ))}
+                            : []),
+                        ]}
+                      />
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
           {merged?.rows.length === 0 && !txns.loading && (

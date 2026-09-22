@@ -21,6 +21,8 @@ function txn(id: number, category = 'Other'): Transaction {
     my_share: null,
     share_source: null,
     effective_amount: 1000,
+    venmo_link_count: 0,
+    venmo_linked_to: null,
   }
 }
 

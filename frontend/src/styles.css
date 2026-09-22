@@ -206,6 +206,27 @@ input, select, button { font: inherit; padding: 0.35rem 0.5rem; }
 .split-panel .split-row label { display: flex; align-items: center; gap: 0.5rem; }
 .split-panel .split-others { min-width: 12rem; }
 
+/* ---- Transactions: Venmo link panel and tags ------------------------------------------ */
+.txn-page .venmo-tag {
+  display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.5rem; font-size: 0.75rem; font-weight: 500;
+  color: var(--accent); background: var(--accent-soft); border-radius: 999px; vertical-align: middle;
+}
+.venmo-panel .venmo-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.venmo-panel .venmo-head h2 { margin: 0; }
+.venmo-panel h3 { margin: 1rem 0 0.4rem; font-size: 0.9375rem; }
+.venmo-panel .venmo-summary { font-weight: 600; }
+.venmo-panel .venmo-list { list-style: none; margin: 0.5rem 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.venmo-panel .venmo-list li {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 0.5rem 0.7rem;
+  background: #fafbfa; border: 1px solid #eef1ef; border-radius: 8px;
+}
+.venmo-panel .venmo-item-info { display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1 1 auto; min-width: 0; }
+.venmo-panel .venmo-item-date { color: #66716c; white-space: nowrap; }
+.venmo-panel .venmo-item-who { font-weight: 600; }
+.venmo-panel .venmo-item-note { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.venmo-panel .venmo-item-amount { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.venmo-panel .venmo-exceeds { white-space: nowrap; }
+
 /* ---- Dashboard: top merchants controls ------------------------------------------------- */
 .panel-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .panel-controls select { padding: 0.3rem 0.5rem; border: 1px solid #d5dcd8; border-radius: 8px; background: #fff; }

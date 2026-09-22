@@ -31,7 +31,10 @@ export type Transaction = {
   my_share: number | null
   share_source: 'manual' | 'venmo' | null
   effective_amount: number
+  venmo_link_count: number
+  venmo_linked_to: number | null
 }
+export type VenmoPayment = { id: number; date: string; merchant: string; description: string; amount: number }
 export type TransactionPage = { items: Transaction[]; total: number }
 export type Filters = {
   date_from?: string
@@ -139,6 +142,12 @@ export const api = {
   updateTransaction: (id: number, patch: Partial<Omit<ManualTransactionInput, 'account_id'>> & { my_share?: number | null }) =>
     request<Transaction>(`/transactions/${id}`, send('PATCH', patch)),
   deleteTransaction: (id: number) => request<void>(`/transactions/${id}`, send('DELETE')),
+  venmoCandidates: (id: number) => request<VenmoPayment[]>(`/transactions/${id}/venmo-candidates`),
+  venmoLinks: (id: number) => request<VenmoPayment[]>(`/transactions/${id}/venmo-links`),
+  linkVenmo: (id: number, venmoId: number) =>
+    request<Transaction>(`/transactions/${id}/venmo-links`, send('POST', { venmo_transaction_id: venmoId })),
+  unlinkVenmo: (id: number, venmoId: number) =>
+    request<Transaction>(`/transactions/${id}/venmo-links/${venmoId}`, send('DELETE')),
 
   createRule: (body: {
     match_field: 'merchant' | 'description'

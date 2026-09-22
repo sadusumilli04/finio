@@ -2,13 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from './api'
 
 let requested: string[] = []
+let requestedInit: (RequestInit | undefined)[] = []
 
 beforeEach(() => {
   requested = []
+  requestedInit = []
   vi.stubGlobal(
     'fetch',
-    vi.fn(async (url: string) => {
+    vi.fn(async (url: string, init?: RequestInit) => {
       requested.push(url)
+      requestedInit.push(init)
       return { ok: true, status: 200, json: async () => [] }
     }),
   )
@@ -66,5 +69,32 @@ describe('api.insights', () => {
     await api.insights(undefined, 'Ann')
     await api.insights('2026-08', '')
     expect(requested).toEqual(['/api/insights?month=2026-08&cardholder=Ann', '/api/insights?cardholder=Ann', '/api/insights?month=2026-08'])
+  })
+})
+
+describe('venmo link endpoints', () => {
+  it('fetches candidates for a charge', async () => {
+    await api.venmoCandidates(42)
+    expect(requested).toEqual(['/api/transactions/42/venmo-candidates'])
+    expect(requestedInit[0]?.method).toBeUndefined()
+  })
+
+  it('fetches the payments already linked to a charge', async () => {
+    await api.venmoLinks(42)
+    expect(requested).toEqual(['/api/transactions/42/venmo-links'])
+    expect(requestedInit[0]?.method).toBeUndefined()
+  })
+
+  it('links a Venmo payment to a charge', async () => {
+    await api.linkVenmo(42, 7)
+    expect(requested).toEqual(['/api/transactions/42/venmo-links'])
+    expect(requestedInit[0]?.method).toBe('POST')
+    expect(JSON.parse(requestedInit[0]?.body as string)).toEqual({ venmo_transaction_id: 7 })
+  })
+
+  it('unlinks a Venmo payment from a charge', async () => {
+    await api.unlinkVenmo(42, 7)
+    expect(requested).toEqual(['/api/transactions/42/venmo-links/7'])
+    expect(requestedInit[0]?.method).toBe('DELETE')
   })
 })

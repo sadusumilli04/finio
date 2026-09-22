@@ -10,6 +10,7 @@ export default function SplitPanel({ transaction: t, onDone, onCancel }: Props) 
   const [share, setShare] = useState(t.my_share === null ? '' : (t.my_share / 100).toFixed(2))
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const linked = t.venmo_link_count > 0
 
   const typed = parseShareToCents(share)
   const paidForOthers = typed !== null && typed <= t.amount ? t.amount - typed : null
@@ -47,19 +48,22 @@ export default function SplitPanel({ transaction: t, onDone, onCancel }: Props) 
         <h2>Split “{t.merchant}”</h2>
         <span className="muted">Charge: {formatCents(t.amount)}</span>
       </div>
+      {linked && (
+        <p className="muted small">This split comes from linked Venmo payments. Unlink them to change it.</p>
+      )}
       <div className="split-row">
         <label>
           Split evenly among
-          <input inputMode="numeric" size={4} placeholder="4" value={people} onChange={(e) => setPeople(e.target.value)}
+          <input inputMode="numeric" size={4} placeholder="4" value={people} disabled={linked} onChange={(e) => setPeople(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); fillIn() } }} />
           <span>people</span>
         </label>
-        <button type="button" onClick={fillIn}>Fill in</button>
+        <button type="button" onClick={fillIn} disabled={linked}>Fill in</button>
       </div>
       <div className="split-row">
         <label>
           My share ($)
-          <input inputMode="decimal" size={10} value={share} onChange={(e) => setShare(e.target.value)} autoFocus />
+          <input inputMode="decimal" size={10} value={share} disabled={linked} onChange={(e) => setShare(e.target.value)} autoFocus />
         </label>
         <span className="muted split-others">
           {paidForOthers === null ? '' : `Paid for others: ${formatCents(paidForOthers)}`}
@@ -67,10 +71,10 @@ export default function SplitPanel({ transaction: t, onDone, onCancel }: Props) 
       </div>
       {error && <p className="error">{error}</p>}
       <div className="form-row">
-        <button type="submit" disabled={busy}>Save split</button>
+        <button type="submit" disabled={busy || linked}>Save split</button>
         <button type="button" onClick={onCancel}>Cancel</button>
         {t.my_share !== null && (
-          <button type="button" disabled={busy} onClick={() => void send(null)}>Remove split</button>
+          <button type="button" disabled={busy || linked} onClick={() => void send(null)}>Remove split</button>
         )}
       </div>
     </form>
