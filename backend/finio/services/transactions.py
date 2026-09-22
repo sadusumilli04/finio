@@ -126,13 +126,13 @@ def update_transaction(conn: sqlite3.Connection, transaction_id: int, fields: di
     row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
     if row is None:
         raise NotFoundError(f"Transaction {transaction_id} not found")
+    if row["origin"] == "import" and set(fields) - SHARE_FIELDS:
+        raise ForbiddenError("Imported transactions can only be recategorized or split")
     if _would_change_linked_split(row, fields):
         from finio.services.venmo_links import is_linked
 
         if is_linked(conn, transaction_id):
             raise ValidationFailed("Unlink the Venmo payments first")
-    if row["origin"] == "import" and set(fields) - SHARE_FIELDS:
-        raise ForbiddenError("Imported transactions can only be recategorized or split")
     if "category_id" in fields:
         if fields["category_id"] is None:
             raise ValidationFailed("category_id cannot be null")

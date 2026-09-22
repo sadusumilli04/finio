@@ -70,6 +70,18 @@ def test_patch_share_refused_while_linked(client, conn, make_account):
     assert "Unlink the Venmo payments first" in r.json()["detail"]
 
 
+def test_patch_amount_on_imported_linked_charge_is_forbidden_not_link_error(client, conn, make_account):
+    """Regression: an imported (not manual) charge that is linked must still get the pre-existing
+    403 'Imported transactions can only be recategorized or split' when its amount is patched,
+    not the link-refusal 400 (unlinking wouldn't make an amount edit on an imported row legal)."""
+    _, _, c, p = seed(conn, make_account)  # seed() inserts the charge with default origin="import"
+    client.post(f"/api/transactions/{c}/venmo-links", json={"venmo_transaction_id": p})
+
+    r = client.patch(f"/api/transactions/{c}", json={"amount": 20000})
+    assert r.status_code == 403, r.text
+    assert "Imported transactions can only be recategorized or split" in r.json()["detail"]
+
+
 def test_patch_resending_unchanged_amount_direction_while_linked_succeeds(client, conn, make_account):
     """Regression: the edit form always resends amount/direction on every save. Editing an unrelated
     field on a linked, manually-entered charge must succeed as long as amount/direction don't change."""
