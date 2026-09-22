@@ -44,7 +44,7 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 
 - Amounts are integer cents. Positive means money spent; negative means money in (payments, refunds, income). Never use floats for money.
 - Dates are stored as ISO `YYYY-MM-DD`. Apple CSV dates are `MM/DD/YYYY`.
-- "Spending" in analytics counts only `type = 'purchase'`. Venmo money received is `payment` and bank transfers are `transfer`, so neither counts.
+- "Spending" in analytics counts only `type = 'purchase'`. Venmo money received is `payment`, which doesn't count; Venmo bank transfers (`Standard Transfer`, `Instant Transfer`) are skipped entirely on import and never become a transaction at all.
 - Dedup: Apple CSVs have no transaction ID. Rows are keyed by `(fingerprint, occurrence)` so overlapping exports skip seen rows while identical same-day purchases both survive. Identical files are rejected by hash. Rows with an `external_id` (Venmo's transaction `ID`) are keyed by `(account, external_id)` instead, so overlapping Venmo statements skip seen rows.
 - A manually chosen category (`category_source = 'manual'`) is never overwritten by rules.
 - Imported transactions are read-only except category and `my_share`. Only `origin = 'manual'` transactions can be edited or deleted.

@@ -16,7 +16,7 @@ def test_import_creates_the_category_and_counts_only_payments_you_send_as_spendi
     r = client.post("/api/imports", data={"account_id": acct["id"]}, files={"file": ("v.csv", FIXTURE)})
     assert r.status_code in (200, 201), r.text
     summary = r.json()
-    assert (summary["rows_total"], summary["rows_added"], summary["rows_skipped"], summary["flagged"]) == (7, 7, 0, 0)
+    assert (summary["rows_total"], summary["rows_added"], summary["rows_skipped"], summary["flagged"]) == (6, 6, 0, 0)
     assert len(summary["errors"]) == 1  # the cancelled payment
     names = [c["name"] for c in client.get("/api/categories").json()]
     assert "Friends & Family" in names
@@ -39,7 +39,7 @@ def test_reimporting_the_same_file_is_rejected_and_an_overlapping_one_adds_only_
     r = client.post("/api/imports", data={"account_id": acct["id"]}, files={"file": ("v2.csv", extra)})
     assert r.status_code in (200, 201), r.text
     body = r.json()
-    assert (body["rows_added"], body["rows_skipped"]) == (1, 7)
+    assert (body["rows_added"], body["rows_skipped"]) == (1, 6)
 
 
 def test_a_rule_on_the_note_categorizes_venmo_rows(conn, make_account):
@@ -59,11 +59,11 @@ def test_a_rule_on_the_note_categorizes_venmo_rows(conn, make_account):
     assert (row["category"], row["category_source"]) == ("Grocery", "rule")
 
 
-def test_transfers_and_money_in_are_excluded_from_spending_but_kept(conn, make_account):
+def test_transfers_are_skipped_entirely_and_money_in_is_excluded_from_spending(conn, make_account):
     acct = make_account(source="venmo_csv", name="Venmo", type="other")
     import_file(conn, acct, "v.csv", FIXTURE)
     types = {r["type"]: r["n"] for r in conn.execute("SELECT type, COUNT(*) AS n FROM transactions GROUP BY type")}
-    assert types == {"purchase": 4, "payment": 2, "transfer": 1}
+    assert types == {"purchase": 4, "payment": 2}  # no 'transfer' rows at all
 
 
 def test_wrong_file_for_a_venmo_account_is_a_400(client):

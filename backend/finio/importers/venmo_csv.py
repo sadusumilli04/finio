@@ -54,6 +54,8 @@ class VenmoCsvImporter:
             external_id = (row.get("ID") or "").strip()
             if not external_id or external_id in seen:
                 continue
+            if (row.get("Type") or "").strip().lower() in TRANSFER_TYPES:
+                continue  # bank transfers are not a transaction of ours; skip them entirely
             try:
                 result.rows.append(self._parse_row(row, external_id))
                 seen.add(external_id)
@@ -78,20 +80,16 @@ class VenmoCsvImporter:
         kind = get("Type")
         lowered = kind.lower()
         note = get("Note")
-        if lowered in TRANSFER_TYPES:
-            type_, merchant, category, flagged = "transfer", "Venmo transfer", "Other", False
-            fallback_note = kind
+        if lowered == "charge":
+            counterparty = get("From") if paid else get("To")
         else:
-            if lowered == "charge":
-                counterparty = get("From") if paid else get("To")
-            else:
-                counterparty = get("To") if paid else get("From")
-            merchant, category = counterparty, FRIENDS
-            fallback_note = f"Venmo {lowered}" if lowered else "Venmo transaction"
-            if lowered in {"payment", "charge"}:
-                type_, flagged = ("purchase" if paid else "payment"), False
-            else:
-                type_, flagged = "other", True
+            counterparty = get("To") if paid else get("From")
+        merchant, category = counterparty, FRIENDS
+        fallback_note = f"Venmo {lowered}" if lowered else "Venmo transaction"
+        if lowered in {"payment", "charge"}:
+            type_, flagged = ("purchase" if paid else "payment"), False
+        else:
+            type_, flagged = "other", True
 
         return RawTransaction(
             transaction_date=datetime_text[:10],

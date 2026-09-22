@@ -196,10 +196,10 @@ Account Activity,,,,,,,,
 The repo also has a larger fabricated sample, `backend/tests/fixtures/venmo_sample.csv`, with a title row, footer and disclaimer like a real statement.
 
 33. **Accounts** page → add an account named "Venmo", type Other, source "Venmo CSV import". Expect it in the table with source "Venmo CSV import".
-34. **Import** page → choose "Venmo" and drop in your file. Expect 4 added and one row error naming line 7 and "status: Pending" (the pending row is not imported).
-35. **Transactions** page, Venmo account. Expect four rows: Person One $20.00 (note "Pizza night"), Person Two $15.50, Person One -$12.00 in green (received), and "Venmo transfer" $30.00 (note "Standard Transfer", category Other). The first three are in the **Friends & Family** category, which is created by the import.
-36. **Dashboard**. Expect total spending $35.50 (the two payments sent), all in Friends & Family. The received $12.00 and the $30.00 transfer are not counted, and the pending row is absent. Top merchants: Person One $20.00, Person Two $15.50.
-37. Import the same file again. Expect the "already imported" error. Save a copy with one more row appended (a new ID) and import it: expect 1 added and the other rows skipped as duplicates.
+34. **Import** page → choose "Venmo" and drop in your file. Expect 3 added and one row error naming line 7 and "status: Pending" (the pending row is not imported). The `Standard Transfer` row is skipped silently: it's not added, not an error, and doesn't count toward the total.
+35. **Transactions** page, Venmo account. Expect three rows: Person One $20.00 (note "Pizza night"), Person Two $15.50, and Person One -$12.00 in green (received). No transfer row appears at all. All three are in the **Friends & Family** category, which is created by the import.
+36. **Dashboard**. Expect total spending $35.50 (the two payments sent), all in Friends & Family. The received $12.00 is not counted (money in), the $30.00 transfer never appears (skipped on import), and the pending row is absent. Top merchants: Person One $20.00, Person Two $15.50.
+37. Import the same file again. Expect the "already imported" error. Save a copy with one more row appended (a new ID) and import it: expect 1 added and the other 3 real rows skipped as duplicates (the transfer is skipped either way, and the pending row errors again).
 38. Split the $20.00 "Pizza night" purchase (⋯ → **Split…**) to $10.00. Expect Dashboard spending of $25.50. Make a rule "description contains Pizza → Restaurants" and expect that row to move to Restaurants while the others stay in Friends & Family.
 39. **Insights** needs at least two months of data to say much; import a second small file of your own with September and October dates (new IDs) to see Venmo spending appear in Insights like any other spending.
 

@@ -23,10 +23,11 @@ def by_id(result):
 
 def test_reads_only_transaction_rows_and_reports_the_cancelled_one():
     result = parse()
-    assert len(result.rows) == 7                                # 8 transaction rows, one cancelled
+    assert len(result.rows) == 6                                # 8 rows: one cancelled, one a transfer (skipped)
     assert [e.message for e in result.errors] == ["status: Cancelled"]
     assert result.errors[0].line > 0
     assert "1000000000000000007" not in by_id(result)
+    assert "1000000000000000003" not in by_id(result)           # the Standard Transfer
 
 
 def test_payment_you_send_is_a_purchase_to_the_payee():
@@ -48,11 +49,10 @@ def test_money_you_receive_is_money_in():
     assert (charge_paid.type, charge_paid.amount, charge_paid.merchant_raw) == ("payment", -4890, "Person Three")
 
 
-def test_standard_transfer_is_not_spending():
-    r = by_id(parse())["1000000000000000003"]
-    assert (r.type, r.amount, r.merchant_raw, r.raw_description, r.source_category) == (
-        "transfer", 3000, "Venmo transfer", "Standard Transfer", "Other",
-    )
+def test_standard_transfer_is_skipped_entirely():
+    result = parse()
+    assert "1000000000000000003" not in by_id(result)
+    assert len(result.errors) == 1                              # only the cancelled row; the transfer is not an error
 
 
 def test_thousands_separators_and_blank_notes():
@@ -137,11 +137,9 @@ def test_amount_with_space_after_sign_and_missing_sign():
     assert result.rows == [] and len(result.errors) == 1
 
 
-def test_instant_transfer_and_positive_transfer_amount():
-    (r,) = parse(HEADER + row(3, "- $10.00", "Instant Transfer")).rows
-    assert (r.type, r.amount) == ("transfer", 1000)
-    (r,) = parse(HEADER + row(4, "+ $10.00", "Standard Transfer")).rows
-    assert (r.type, r.amount) == ("transfer", -1000)
+def test_instant_and_standard_transfers_are_both_skipped():
+    result = parse(HEADER + row(3, "- $10.00", "Instant Transfer") + row(4, "+ $10.00", "Standard Transfer"))
+    assert result.rows == [] and result.errors == []
 
 
 def test_status_is_case_insensitive():

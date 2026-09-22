@@ -75,10 +75,10 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R48.** I can import a Venmo account statement CSV into a Venmo account (source "Venmo CSV import"), through the same Accounts and Import pages. The statement's title, balance, footer and disclaimer rows are ignored; a file that is not a Venmo statement is rejected with a clear error.
 - **R49.** Money I send (a payment, or a charge I pay) is spending, at my share if I split it (R26, R32).
 - **R50.** Money I receive is money in, not spending, and does not reduce spending.
-- **R51.** Transfers to my bank are not spending. They are stored for the record as transfers.
+- **R51.** Transfers to my bank (`Standard Transfer`, `Instant Transfer`) are not transactions of mine and are skipped on import: they are never stored and never counted, in `rows_total` or anywhere else.
 - **R52.** Importing is duplicate-safe by Venmo transaction ID: overlapping statements skip rows already stored, and a repeated ID inside one file is skipped. Importing the exact same file twice is still rejected (R8).
 - **R53.** Only completed rows (`Complete`, `Issued`) are imported. Pending, cancelled or failed rows are reported as row errors and are never counted as spending.
-- **R54.** Venmo payments and charges default to a new **Friends & Family** category; transfers default to `Other`.
+- **R54.** Venmo payments and charges default to a new **Friends & Family** category.
 - **R55.** Category rules (matching the counterparty or the note) and splits work on Venmo rows like any other.
 
 ## Linking Venmo payments to charges

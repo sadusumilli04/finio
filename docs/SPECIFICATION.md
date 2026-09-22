@@ -27,7 +27,7 @@ Columns: Transaction Date, Clearing Date, Description, Merchant, Category, Type,
   - `id`, `account_id`, `batch_id` (null for manual entries)
   - `posted_date`, `transaction_date`
   - `amount` in integer cents; positive means money spent, negative means money in, normalized across sources
-  - `type` (purchase, payment, refund, income, transfer, other)
+  - `type` (purchase, payment, refund, income, other)
   - `raw_description`, `merchant_raw`, `merchant_clean`
   - `cardholder`
   - `category_id`, `category_source` (`source_default`, `rule`, `manual`), `source_category`
@@ -54,22 +54,22 @@ Columns: Transaction Date, Clearing Date, Description, Merchant, Category, Type,
 
 Account source `venmo_csv` (account type `other`). The statement starts with a title row (`Account Statement - (@username)`), an `Account Activity` row, the column header row and a balance row; transaction rows follow, each with a leading empty column, then a footer row and a long multi-line legal disclaimer in one quoted cell. The importer finds the header by the `ID` and `Datetime` columns and skips every row without an `ID` (title, balance, footer, disclaimer). A file without the required columns (`ID`, `Datetime`, `Type`, `Status`, `Amount (total)`) is rejected with `Not a Venmo CSV; missing columns: [...]` (400). Relevant columns: `ID`, `Datetime` (ISO), `Type`, `Status`, `Note`, `From`, `To`, `Amount (total)` (written like `- $20.00` or `+ $56.52`, with optional thousands separators). The whole row is kept in `raw_row`.
 
-The `Amount (total)` sign decides the direction (`-` you paid, `+` you received), not the `From`/`To` names.
+The `Amount (total)` sign decides the direction (`-` you paid, `+` you received), not the `From`/`To` names. `Standard Transfer` and `Instant Transfer` rows (money moving to or from your bank) are not transactions of ours and are skipped entirely: they never become a row, never count toward `rows_total`/`rows_added`, and are not reported as an error.
 
 | Venmo row | `type` | `amount` (cents) | Counts as spending |
 |---|---|---|---|
 | `Payment` or `Charge`, `- $X` | `purchase` | `+X` | yes |
 | `Payment` or `Charge`, `+ $X` | `payment` | `-X` | no (money in) |
-| `Standard Transfer`, `Instant Transfer` | `transfer` | `+X` if `-`, else `-X` | no (kept for the record) |
+| `Standard Transfer`, `Instant Transfer` | *(skipped, not imported)* | — | no |
 | any other `Type` | `other`, flagged, category defaults to Friends & Family | by sign | no |
 
-- **Merchant** (`merchant_raw`): the counterparty. `To` for a Payment you pay, `From` for a Payment you receive, `From` for a Charge you pay, `To` for a Charge you receive. Transfers use `Venmo transfer`.
-- **Description** (`raw_description`): the note; when blank, `Venmo payment`, `Venmo charge`, or the transfer type (for example `Standard Transfer`).
-- **Category:** `source_category` is `Friends & Family` for payments and charges (created on first import by the existing unknown-category behavior) and `Other` for transfers. Rules and manual choices override it as usual, and rules can match on the note.
+- **Merchant** (`merchant_raw`): the counterparty. `To` for a Payment you pay, `From` for a Payment you receive, `From` for a Charge you pay, `To` for a Charge you receive.
+- **Description** (`raw_description`): the note; when blank, `Venmo payment` or `Venmo charge`.
+- **Category:** `source_category` is `Friends & Family` for payments and charges (created on first import by the existing unknown-category behavior). Rules and manual choices override it as usual, and rules can match on the note.
 - **Dates:** `transaction_date` is the date part of `Datetime`; there is no posted date. There is no cardholder.
 - **Status:** only `Complete` and `Issued` rows are imported. Any other status (`Pending`, `Cancelled`, `Failed`, ...) is reported as a row error `status: X` with its line number and is not imported, so it never counts as spending.
 - **Duplicates:** deduplicated by Venmo `ID` (see Deduplication). A repeated `ID` inside one file is skipped. A corrected re-issue of the same Venmo `ID` (different amount) is skipped, so the first imported amount stays. A bad date or amount is a row error and does not stop the import.
-- **Spending:** analytics count only `type = 'purchase'`, so Venmo payments sent (and charges paid) are spending at the user's share, and transfers and money received are excluded with no analytics change. A payment and its return on the same day are both kept.
+- **Spending:** analytics count only `type = 'purchase'`, so Venmo payments sent (and charges paid) are spending at the user's share, and money received is excluded with no analytics change. A payment and its return on the same day are both kept.
 
 ## Manual entry
 
