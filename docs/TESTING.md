@@ -34,7 +34,7 @@ npm ci
 ## 2. Run the automated tests
 
 ```bash
-cd backend && .venv/bin/pytest -q          # backend: importers, dedup, rules, splits, analytics, insights (tests/test_insights_*.py), Venmo (tests/test_venmo_*.py), API
+cd backend && .venv/bin/pytest -q          # backend: importers, dedup, rules, splits, analytics, insights (tests/test_insights_*.py), Venmo (tests/test_venmo_*.py, including linking in tests/test_venmo_links*.py), API
 cd ../frontend && npm test                 # frontend: helpers (money, dates, filters, splits, ...)
 npm run build                              # type-checks (tsc) and builds the frontend
 ```
@@ -203,6 +203,31 @@ The repo also has a larger fabricated sample, `backend/tests/fixtures/venmo_samp
 38. Split the $20.00 "Pizza night" purchase (⋯ → **Split…**) to $10.00. Expect Dashboard spending of $25.50. Make a rule "description contains Pizza → Restaurants" and expect that row to move to Restaurants while the others stay in Friends & Family.
 39. **Insights** needs at least two months of data to say much; import a second small file of your own with September and October dates (new IDs) to see Venmo spending appear in Insights like any other spending.
 
+**Linking Venmo payments to a charge**
+
+This is a fabricated example: a card charge and three friends paying you back on Venmo, plus a fourth payment too large to link. Continue on the same accounts used above.
+
+40. **Add transaction** → account "Apple Card", date `2026-09-20`, amount `$150.00`, direction Expense, merchant "Tapas Bar", category Restaurants. Expect it in the Transactions list at $150.00.
+41. Save this as a new file, for example `/tmp/venmo-links-test.csv` (fabricated; new IDs so it doesn't collide with the earlier Venmo file), and import it into the same "Venmo" account:
+
+```csv
+Account Activity,,,,,,,,
+,ID,Datetime,Type,Status,Note,From,To,Amount (total)
+,9100000000000001,2026-09-20T18:00:00,Payment,Complete,Tapas split,Sam,Test User,+ $40.00
+,9100000000000002,2026-09-21T09:00:00,Payment,Complete,Tapas split,Priya,Test User,+ $40.00
+,9100000000000003,2026-09-21T09:05:00,Payment,Complete,Tapas split,Jordan,Test User,+ $30.00
+,9100000000000004,2026-09-21T09:10:00,Payment,Complete,Rent,Alex,Test User,+ $200.00
+```
+
+Expect "4 added, 0 skipped as duplicates".
+
+42. On Tapas Bar's **⋯** menu, choose **Link Venmo payments…**. Expect "Your share: $150.00 of $150.00" and four candidates ordered by date to the charge first, then largest amount: Sam $40.00 (same day as the charge), then Alex $200.00, Priya $40.00 and Jordan $30.00 (all a day later, largest first). Alex's row shows "Exceeds the charge" with its **Link** button disabled, since $200.00 alone is already more than the $150.00 charge.
+43. Click **Link** on Sam, then on Priya. Expect each to move up into the linked list with an **Unlink** button, the summary to read "Your share: $110.00 of $150.00" then "Your share: $70.00 of $150.00", and Alex to stay disabled throughout (still exceeds what's left).
+44. Click **Link** on Jordan. Expect "Your share: $40.00 of $150.00". Close the panel. Expect Tapas Bar's row to show a small **Venmo-linked** tag and $40.00 in bold with "of $150.00" beneath it, and Sam's, Priya's and Jordan's Venmo rows to each show "linked to Tapas Bar". On the Dashboard, expect Tapas Bar to contribute $40.00 to Restaurants spending, not $150.00.
+45. Open Tapas Bar's **⋯** menu → **Edit split…**. Expect a message that the split comes from linked Venmo payments and that its fields are disabled. Choose **Remove split** instead (still on the **⋯** menu): expect an inline error saying to unlink the Venmo payments first, and the share to stay at $40.00.
+46. Open **Edit** on Tapas Bar (it's a manual transaction) and change the amount to $200.00. Expect an error saying to unlink the Venmo payments first, and no change.
+47. Reopen **Link Venmo payments…** and click **Unlink** on Jordan, then Priya, then Sam. Expect the share to go back up to $70.00, then $110.00, then to the full $150.00 unsplit (the **Venmo-linked** tag disappears, and so do the three "linked to Tapas Bar" tags).
+
 ## 7. Things worth trying to break
 
 - Amounts with commas, dollar signs, three decimals, negatives, or very large values.
@@ -212,6 +237,7 @@ The repo also has a larger fabricated sample, `backend/tests/fixtures/venmo_samp
 - A Venmo CSV with a missing `ID` or `Amount (total)` column (expect "Not a Venmo CSV"), an amount like `- $1,250.00`, a repeated `ID` inside one file, and a `Cancelled` or `Failed` row.
 - Two overlapping exports: import `apple_sample.csv`, then a copy with extra rows added. Only the new rows should be added, and the two identical Blue Bottle rows should both survive.
 - Very long merchant names, and names with special characters.
+- Linking the same Venmo payment to a charge twice, or two payments that together would exceed the charge (the second should be refused). Deleting the card account while payments are linked to it (the payments should end up unlinked); deleting the Venmo account while its payments are linked (the charges should lose their share and go back to unsplit).
 
 ## Known limitations
 

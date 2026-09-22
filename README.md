@@ -41,6 +41,7 @@ The database is created at `backend/data/finio.sqlite3` (override with `FINIO_DB
 4. **Venmo**: create an account with source "Venmo CSV import" and import a Venmo statement CSV the same way. Money you send counts as spending (category "Friends & Family" by default), money you receive is money in, and bank transfers are not spending. Duplicates are skipped by Venmo transaction ID, and pending or cancelled rows are not imported.
 5. **Split a group charge**: open a purchase's ⋯ menu and choose Split… to enter what you actually spent (or split evenly among N people). Only your share counts on the Dashboard; the full charge stays on the transaction.
 6. **Insights**: pick a month to see how it compares with the previous one, what changed, and what looks unusual. It needs at least two months of data to say much.
+7. **Link Venmo payments to a charge**: on a card charge's ⋯ menu, choose **Link Venmo payments…** to link the friends' Venmo payments that reimbursed it; your share becomes the charge minus what's linked, and unlinking restores the full charge.
 
 ## Try it with sample data
 

@@ -51,6 +51,7 @@ Layered backend: importers -> services -> FastAPI routes; the React UI calls onl
 - Every imported transaction keeps its original CSV row in `raw_row` so parsing and rules can be re-applied without re-importing.
 - Anything that answers "how much did I spend" must use `EFFECTIVE_AMOUNT` from `backend/finio/services/amounts.py` (the user's share when a purchase is split, else the full charge); never re-type the expression or aggregate raw `amount` for spending.
 - A purchase can be split (`my_share`, `share_source`): only purchases, `0 <= my_share <= amount`; imported transactions are read-only except category and `my_share`; the charge `amount` is never modified.
+- A linked charge's split is derived, not manual: while a charge has rows in `venmo_links`, its `my_share` is recalculated from the linked payments with `share_source = 'venmo'`, and editing its split by hand, or changing its amount or direction, is refused ("Unlink the Venmo payments first") until it's unlinked. See `backend/finio/services/venmo_links.py`.
 - `where_clause()` in `services/filters.py` assumes the transactions table is aliased `t`; every query that uses it must alias accordingly.
 
 ## Testing

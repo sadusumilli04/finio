@@ -54,7 +54,7 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R33.** Transactions start unsplit; I opt in per transaction, and importing never sets a split.
 - **R34.** I enter the split as an exact amount, with a shortcut that splits evenly among N people and fills the amount in.
 - **R35.** The original charge stays intact and visible, so the app keeps matching the card statement.
-- **R36.** The design leaves a place for a later step that matches Venmo reimbursements to charges to set the share.
+- **R36.** Venmo reimbursements can be matched to charges to set the share (see Linking Venmo payments to charges, R56-R61).
 - **R37.** Top merchants on the Dashboard: I can choose how many to show (5, 10, 25 or 50) and rank them by most spent or by most visits.
 - **R38.** The Dashboard can be filtered by category, in addition to date range, cardholder and account.
 
@@ -81,6 +81,15 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R54.** Venmo payments and charges default to a new **Friends & Family** category; transfers default to `Other`.
 - **R55.** Category rules (matching the counterparty or the note) and splits work on Venmo rows like any other.
 
+## Linking Venmo payments to charges
+
+- **R56.** I can link an incoming Venmo payment (money in, on a Venmo account) to a card charge (a purchase on a non-Venmo account) from the charge's row menu. A Venmo payment links to exactly one charge; a charge can have several linked payments.
+- **R57.** Linking or unlinking recalculates my share as the charge minus the total of what's linked, recorded with `share_source` "venmo". Unlinking the last payment restores the full charge as unsplit; a manual share set before linking is not restored, since linking replaced it.
+- **R58.** Linking is refused when the linked total would exceed the charge, when either side is the wrong kind of transaction, when the transaction doesn't exist, or when the Venmo payment is already linked to another charge.
+- **R59.** Linking a charge that already has a manual split replaces it, and the app warns before doing so. While a charge has links, editing its split by hand, or changing its amount or direction, is refused until the payments are unlinked, so the recorded links and the share never disagree.
+- **R60.** For a given charge, I'm shown unlinked incoming Venmo payments dated within a window around the charge's date as candidates to link, closest date first, then largest amount.
+- **R61.** Deleting an account removes the links involving its transactions, and recalculates the share of any card charge that loses a link because the other side's account was deleted.
+
 ## Screens
 
 - **R28.** Dashboard, Insights, Transactions, Recurring, Import, and Accounts.
@@ -93,4 +102,4 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 
 ## Out of scope for v1
 
-Budgets, a net-worth view, matching Venmo reimbursements to card charges, offsetting spending with money received, per-person split amounts, tracking money owed, PDF import, Plaid or other aggregator sync, auth and hosting, a native Apple app, and screens for managing categories and merchant aliases (these are available through the API).
+Budgets, a net-worth view, suggested (automatic) Venmo-to-charge matches, linking one Venmo payment to several charges, linking outgoing Venmo payments to anything, a Venmo balance view, offsetting spending with money received, per-person split amounts, tracking money owed, PDF import, Plaid or other aggregator sync, auth and hosting, a native Apple app, and screens for managing categories and merchant aliases (these are available through the API).
