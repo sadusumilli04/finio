@@ -9,7 +9,9 @@ TXN_SELECT = f"""
 SELECT t.id, t.account_id, a.name AS account_name, t.transaction_date, t.posted_date, t.amount,
        t.type, t.merchant_clean AS merchant, t.raw_description AS description, t.cardholder,
        t.category_id, c.name AS category, t.category_source, t.origin,
-       t.my_share, t.share_source, {EFFECTIVE_AMOUNT} AS effective_amount
+       t.my_share, t.share_source, {EFFECTIVE_AMOUNT} AS effective_amount,
+       (SELECT COUNT(*) FROM venmo_links l WHERE l.card_transaction_id = t.id) AS venmo_link_count,
+       (SELECT l.card_transaction_id FROM venmo_links l WHERE l.venmo_transaction_id = t.id) AS venmo_linked_to
 FROM transactions t
 JOIN accounts a ON a.id = t.account_id
 JOIN categories c ON c.id = t.category_id
@@ -75,6 +77,11 @@ def set_share(conn: sqlite3.Connection, transaction_id: int, my_share: int | Non
     row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
     if row is None:
         raise NotFoundError(f"Transaction {transaction_id} not found")
+    if source == "manual":
+        from finio.services.venmo_links import is_linked
+
+        if is_linked(conn, transaction_id):
+            raise ValidationFailed("Unlink the Venmo payments first")
     sets = _share_columns(row, my_share, source)
     with conn:
         conn.execute(
@@ -106,6 +113,11 @@ def update_transaction(conn: sqlite3.Connection, transaction_id: int, fields: di
     row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
     if row is None:
         raise NotFoundError(f"Transaction {transaction_id} not found")
+    if {"my_share", "amount", "direction"} & set(fields):
+        from finio.services.venmo_links import is_linked
+
+        if is_linked(conn, transaction_id):
+            raise ValidationFailed("Unlink the Venmo payments first")
     if row["origin"] == "import" and set(fields) - SHARE_FIELDS:
         raise ForbiddenError("Imported transactions can only be recategorized or split")
     if "category_id" in fields:

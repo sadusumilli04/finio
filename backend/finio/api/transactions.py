@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from finio.deps import get_conn
 from finio.services import transactions as svc
+from finio.services import venmo_links as venmo_svc
 
 router = APIRouter()
 
@@ -103,3 +104,29 @@ def update_transaction(transaction_id: int, body: TransactionPatch, conn: sqlite
 def delete_transaction(transaction_id: int, conn: sqlite3.Connection = Depends(get_conn)):
     svc.delete_transaction(conn, transaction_id)
     return Response(status_code=204)
+
+
+class VenmoLinkIn(BaseModel):
+    venmo_transaction_id: int
+
+
+@router.get("/transactions/{transaction_id}/venmo-candidates")
+def venmo_candidates(transaction_id: int, conn: sqlite3.Connection = Depends(get_conn)):
+    return venmo_svc.list_candidates(conn, transaction_id)
+
+
+@router.get("/transactions/{transaction_id}/venmo-links")
+def venmo_link_list(transaction_id: int, conn: sqlite3.Connection = Depends(get_conn)):
+    return venmo_svc.list_links(conn, transaction_id)
+
+
+@router.post("/transactions/{transaction_id}/venmo-links")
+def venmo_link_create(transaction_id: int, body: VenmoLinkIn, conn: sqlite3.Connection = Depends(get_conn)):
+    return venmo_svc.link_payment(conn, transaction_id, body.venmo_transaction_id)
+
+
+@router.delete("/transactions/{transaction_id}/venmo-links/{venmo_transaction_id}")
+def venmo_link_delete(
+    transaction_id: int, venmo_transaction_id: int, conn: sqlite3.Connection = Depends(get_conn)
+):
+    return venmo_svc.unlink_payment(conn, transaction_id, venmo_transaction_id)

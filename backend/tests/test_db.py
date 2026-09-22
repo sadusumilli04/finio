@@ -47,9 +47,9 @@ def test_fingerprint_occurrence_unique_but_nulls_allowed(conn, make_account):
 
 
 def test_schema_version_stamped_and_not_lowered(conn):
-    assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 3
     init_db(conn)
-    assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 3
     conn.execute("PRAGMA user_version = 5")
     init_db(conn)
     assert conn.execute("PRAGMA user_version").fetchone()[0] == 5
@@ -119,9 +119,9 @@ def test_migrates_an_old_database_in_place(tmp_path, version):
     row = conn.execute("SELECT * FROM transactions").fetchone()
     assert (row["merchant_clean"], row["amount"]) == ("Home Plate", 12000)
     assert row["my_share"] is None and row["share_source"] is None
-    assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 3
 
     init_db(conn)  # a second run changes nothing
     assert conn.execute("SELECT COUNT(*) FROM transactions").fetchone()[0] == 1
-    assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 3
     conn.close()

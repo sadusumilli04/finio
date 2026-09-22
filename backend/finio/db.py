@@ -76,9 +76,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_txn_fingerprint
     ON transactions(fingerprint, occurrence) WHERE fingerprint IS NOT NULL;
 CREATE INDEX IF NOT EXISTS ix_txn_date ON transactions(transaction_date);
 CREATE INDEX IF NOT EXISTS ix_txn_merchant ON transactions(merchant_clean);
+
+CREATE TABLE IF NOT EXISTS venmo_links (
+    venmo_transaction_id INTEGER PRIMARY KEY REFERENCES transactions(id),
+    card_transaction_id INTEGER NOT NULL REFERENCES transactions(id)
+);
+CREATE INDEX IF NOT EXISTS ix_venmo_links_card ON venmo_links(card_transaction_id);
 """
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def _migrate(conn: sqlite3.Connection) -> None:
