@@ -128,9 +128,18 @@ Screens:
 
 A cardholder filter is available throughout.
 
+## Docker packaging
+
+`docker compose up --build` runs the whole app from one container on one port (`8000`), for a zero-install demo — not used for local development, which keeps the two-server Vite + uvicorn setup.
+
+- The `Dockerfile` builds the frontend, then copies the built files (`frontend/dist`) into a Python image alongside the backend, so it can serve both from a single FastAPI process.
+- `app.py` serves the built frontend from the same origin as the API whenever `frontend/dist` exists: real files (JS, CSS, images) are returned as-is, an unknown path (a client-side route, or nothing) falls back to `index.html`, `/api/...` paths are never captured by this fallback, and a request cannot escape the static directory. This directory does not exist outside the Docker image, so local development is unaffected.
+- `backend/finio/services/demo_data.py` seeds a brand-new, empty database from `testdata/` (an Apple Card account and a Venmo account, each importing its sample CSV) when the `FINIO_SEED_DEMO_DATA` environment variable is `1`, which only `docker-compose.yml` sets. It is a no-op once any account already exists, so it never re-seeds or duplicates data across a container restart, and a problem seeding never stops the app from starting.
+- The container's database lives in a Docker volume, kept separate from `backend/data/finio.sqlite3`.
+
 ## Testing and layout
 
-- pytest: importer parsing (Apple and Venmo, `test_venmo_importer.py`, `test_venmo_ingestion.py`), dedup and overlap cases, rules and rule priority, manual entry (create, edit, delete, category protection from rules), analytics queries, API tests, and linking Venmo payments to charges (`test_venmo_links.py`, `test_venmo_links_api.py`). Vitest for key UI logic.
+- pytest: importer parsing (Apple and Venmo, `test_venmo_importer.py`, `test_venmo_ingestion.py`), dedup and overlap cases, rules and rule priority, manual entry (create, edit, delete, category protection from rules), analytics queries, API tests, linking Venmo payments to charges (`test_venmo_links.py`, `test_venmo_links_api.py`), and the Docker-only behavior (`test_demo_seed.py`, `test_app_static.py`). Vitest for key UI logic.
 - Layout: `backend/` (`importers/`, `services/`, `api/`, `db/`) and `frontend/`. The SQLite file and any real CSVs are git-ignored. Test fixtures use fabricated rows only.
 
 ## Open items

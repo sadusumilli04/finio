@@ -17,7 +17,7 @@ Commands are for macOS and Linux. On Windows, adjust the paths (`.venv\Scripts\.
 
 ## 1. Set up
 
-The repository is private on GitHub, so ask the owner to give you access before you clone it.
+The repository is public on GitHub, so anyone can clone it directly.
 
 ```bash
 git clone https://github.com/sadusumilli04/finio.git

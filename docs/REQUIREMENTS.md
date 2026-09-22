@@ -90,6 +90,12 @@ An app for analyzing my Apple Card transactions, similar to what Mint used to do
 - **R60.** For a given charge, I'm shown unlinked incoming Venmo payments dated within a window around the charge's date as candidates to link, closest date first, then largest amount.
 - **R61.** Deleting an account removes the links involving its transactions, and recalculates the share of any card charge that loses a link because the other side's account was deleted.
 
+## Trying it out
+
+- **R62.** A one-command Docker quick start (`docker compose up --build`) runs the whole app from one container on one port, with no Python or Node install needed.
+- **R63.** That container starts pre-seeded with a year of fabricated sample data, so there's something to look at immediately; it never re-seeds or duplicates data once any account exists, including across a container restart.
+- **R64.** The Docker packaging changes nothing about local development: the seeding and the single-origin static serving only activate inside the Docker image.
+
 ## Screens
 
 - **R28.** Dashboard, Insights, Transactions, Recurring, Import, and Accounts.
