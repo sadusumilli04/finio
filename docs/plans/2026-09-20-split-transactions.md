@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, stdlib `sqlite3`, pytest; React + TypeScript (Vite 6), Vitest.
 
-**Spec:** `docs/superpowers/specs/2026-09-20-split-transactions-design.md`
+**Spec:** `docs/specs/2026-09-20-split-transactions-design.md`
 
 ## Global Constraints
 

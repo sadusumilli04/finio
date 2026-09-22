@@ -1,6 +1,6 @@
 # Finio build tasks
 
-A short explanation of each of the 16 tasks in the implementation plan (`docs/superpowers/plans/2026-09-20-finio-implementation.md`). Tasks 1–11 build the backend, 12–15 build the UI, and 16 wraps up. Each task follows test first, then code, then commit, and ends with something you can run.
+A short explanation of each of the 16 tasks in the implementation plan (`docs/plans/2026-09-20-finio-implementation.md`). Tasks 1–11 build the backend, 12–15 build the UI, and 16 wraps up. Each task follows test first, then code, then commit, and ends with something you can run.
 
 ## Backend
 

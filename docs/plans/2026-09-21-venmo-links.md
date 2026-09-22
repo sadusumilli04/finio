@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, sqlite3, pytest; React + TypeScript, Vitest.
 
-**Spec:** `docs/superpowers/specs/2026-09-21-venmo-links-design.md` (binding).
+**Spec:** `docs/specs/2026-09-21-venmo-links-design.md` (binding).
 
 ## Global Constraints
 

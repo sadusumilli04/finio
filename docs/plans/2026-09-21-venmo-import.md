@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, stdlib `csv`/`decimal`, sqlite3, pytest; React + TypeScript (one dropdown option and a label).
 
-**Spec:** `docs/superpowers/specs/2026-09-21-venmo-import-design.md`
+**Spec:** `docs/specs/2026-09-21-venmo-import-design.md`
 
 ## Global Constraints
 

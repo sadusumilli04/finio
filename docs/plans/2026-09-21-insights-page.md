@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, stdlib `sqlite3`, pytest; React + TypeScript (Vite 6), Vitest.
 
-**Spec:** `docs/superpowers/specs/2026-09-21-insights-page-design.md`
+**Spec:** `docs/specs/2026-09-21-insights-page-design.md`
 
 ## Global Constraints
 
@@ -1770,7 +1770,7 @@ git commit -m "feat: Insights page" -m "Co-Authored-By: Claude Sonnet 5 <noreply
 
 - [ ] **Step 1: Update the docs**
 
-- `docs/SPECIFICATION.md`: add `GET /api/insights?month=YYYY-MM` to the API section (response shape and the default-month and 400 rules from the design spec `docs/superpowers/specs/2026-09-21-insights-page-design.md`), and an "Insights" entry to the UI section (nav item, month picker, at-a-glance card, five cards, states).
+- `docs/SPECIFICATION.md`: add `GET /api/insights?month=YYYY-MM` to the API section (response shape and the default-month and 400 rules from the design spec `docs/specs/2026-09-21-insights-page-design.md`), and an "Insights" entry to the UI section (nav item, month picker, at-a-glance card, five cards, states).
 - `docs/REQUIREMENTS.md`: continue the existing numbering (the last requirement is R38, confirm by reading the file) with new requirements for: the Insights page and month picker; month summary with same-days comparison, typical month, rank and pace; biggest movers; new merchants; merchants that grew; unusual charges; monthly subscription changes; insights counting only the user's share of purchases.
 - `README.md`: add one feature bullet for the Insights page.
 - `docs/TESTING.md`: add a short "Insights page" walkthrough (import or add transactions across at least three months, open Insights, change month, check each card and the empty states) and mention `tests/test_insights_*.py`.
